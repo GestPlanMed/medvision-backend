@@ -1,5 +1,7 @@
 import { FastifyInstance } from 'fastify'
+
 import { AuthController } from '../controllers/auth.controller'
+import { authMiddleware } from '../middlewares/auth.middlewares'
 
 const authController = new AuthController()
 
