@@ -29,6 +29,9 @@ export const doctors = pgTable('doctors', {
 	phone: varchar('phone', { length: 20 }).notNull(),
 	crm: varchar('crm', { length: 20 }).notNull().unique(),
 	specialty: text('specialty').notNull(),
+	code: text('code'),
+	password: text('password').notNull(),
+	resetCode: varchar('reset_code', { length: 6 }),
 	createdAt: timestamp('created_at', { mode: 'string', withTimezone: true }).defaultNow().notNull(),
 	updatedAt: timestamp('updated_at', { mode: 'string', withTimezone: true }).defaultNow().notNull(),
 })

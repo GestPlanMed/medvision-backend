@@ -1,5 +1,5 @@
 {
-  "id": "41dbadd5-05bb-4853-9975-fc46281d3ff8",
+  "id": "1cb79ad7-9c2f-42ce-9d90-f17cc7d3875a",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -195,6 +195,24 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true
+        },
+        "code": {
+          "name": "code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "password": {
+          "name": "password",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "reset_code": {
+          "name": "reset_code",
+          "type": "varchar(6)",
+          "primaryKey": false,
+          "notNull": false
         },
         "created_at": {
           "name": "created_at",
