@@ -89,6 +89,8 @@ export class AuthController {
 				code: patientCode,
 			})
 
+			console.log(`Código de acesso para o paciente ${patient[0].cpf}: ${patientCode}`)
+
 			return await res.status(200).send({ message: 'Código de acesso enviado com sucesso.' })
 		} catch (error) {
 			throw error
@@ -116,7 +118,16 @@ export class AuthController {
 				return res.status(401).send({ message: 'Código inválido.' })
 			}
 
-			return res.status(200).send({ message: 'Código validado com sucesso.' })
+			const token = req.server.jwt.sign({
+				id: patient[0].id,
+				cpf: patient[0].cpf,
+				name: patient[0].name,
+			})
+
+			return res.status(200).send({
+				message: 'Código validado com sucesso.',
+				token,
+			})
 		} catch (error) {
 			throw error
 		}
@@ -145,6 +156,8 @@ export class AuthController {
 				id: patient[0].id,
 				code: patientCode,
 			})
+
+			console.log(`Código de acesso para o paciente ${patient[0].cpf}: ${patientCode}`)
 
 			return res.status(200).send({ message: 'Código reenviado com sucesso.' })
 		} catch (error) {

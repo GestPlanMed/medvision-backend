@@ -10,8 +10,8 @@ export const SignUpPatientSchema = z.object({
 		city: z.string().min(1),
 		state: z.string().min(2).max(2),
 		zipCode: z.string().min(5).max(10),
-	}),
-	code: z.string().min(6).max(6),
+	}).optional(),
+	code: z.string().min(6).max(6).optional(),
 })
 
 export const SignInPatientSchema = z.object({

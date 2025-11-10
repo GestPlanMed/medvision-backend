@@ -1,19 +1,22 @@
-CREATE TABLE "users" (
+CREATE TABLE "admins" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"email" varchar(255) NOT NULL,
-	"phone" varchar(20),
 	"name" text NOT NULL,
-	"created_at" timestamp DEFAULT now() NOT NULL,
-	CONSTRAINT "users_email_unique" UNIQUE("email")
+	"email" varchar(255) NOT NULL,
+	"password" text NOT NULL,
+	"reset_code" varchar(6),
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "admins_email_unique" UNIQUE("email")
 );
 --> statement-breakpoint
 CREATE TABLE "appointments" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"patient_id" uuid NOT NULL,
 	"doctor_id" uuid NOT NULL,
-	"appointment_date" timestamp NOT NULL,
+	"appointment_date" timestamp with time zone NOT NULL,
 	"reason" text NOT NULL,
-	"created_at" timestamp DEFAULT now() NOT NULL
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "doctors" (
@@ -23,7 +26,8 @@ CREATE TABLE "doctors" (
 	"phone" varchar(20) NOT NULL,
 	"crm" varchar(20) NOT NULL,
 	"specialty" text NOT NULL,
-	"created_at" timestamp DEFAULT now() NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
 	CONSTRAINT "doctors_email_unique" UNIQUE("email"),
 	CONSTRAINT "doctors_crm_unique" UNIQUE("crm")
 );
@@ -31,13 +35,14 @@ CREATE TABLE "doctors" (
 CREATE TABLE "patients" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"name" text NOT NULL,
+	"age" integer NOT NULL,
 	"cpf" varchar(14) NOT NULL,
-	"email" varchar(255) NOT NULL,
 	"phone" varchar(20) NOT NULL,
-	"birth_date" timestamp NOT NULL,
-	"created_at" timestamp DEFAULT now() NOT NULL,
-	CONSTRAINT "patients_cpf_unique" UNIQUE("cpf"),
-	CONSTRAINT "patients_email_unique" UNIQUE("email")
+	"address" text,
+	"code" text,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "patients_cpf_unique" UNIQUE("cpf")
 );
 --> statement-breakpoint
 ALTER TABLE "appointments" ADD CONSTRAINT "appointments_patient_id_patients_id_fk" FOREIGN KEY ("patient_id") REFERENCES "public"."patients"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint

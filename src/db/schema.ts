@@ -1,24 +1,25 @@
 import { pgTable, text, timestamp, varchar, integer, uuid } from 'drizzle-orm/pg-core'
 
-export const admins = pgTable('users', {
+export const admins = pgTable('admins', {
 	id: uuid('id').defaultRandom().primaryKey(),
-	email: varchar('email', { length: 255 }).notNull().unique(),
-	phone: varchar('phone', { length: 20 }),
 	name: text('name').notNull(),
-	createdAt: timestamp('created_at').defaultNow().notNull(),
-	updatedAt: timestamp('updated_at').defaultNow().notNull(),
+	email: varchar('email', { length: 255 }).notNull().unique(),
+	password: text('password').notNull(),
+	resetCode: varchar('reset_code', { length: 6 }),
+	createdAt: timestamp('created_at', { mode: 'string', withTimezone: true }).defaultNow().notNull(),
+	updatedAt: timestamp('updated_at', { mode: 'string', withTimezone: true }).defaultNow().notNull()
 })
 
 export const patients = pgTable('patients', {
 	id: uuid('id').defaultRandom().primaryKey(),
 	name: text('name').notNull(),
-	age: integer('age'),
+	age: integer('age').notNull(),
 	cpf: varchar('cpf', { length: 14 }).notNull().unique(),
 	phone: varchar('phone', { length: 20 }).notNull(),
-	address: text('address').notNull(),
-	code: varchar('code', { length: 6 }),
-	createdAt: timestamp('created_at').defaultNow().notNull(),
-	updatedAt: timestamp('updated_at').defaultNow().notNull(),
+	address: text('address'),
+	code: text('code'),
+	createdAt: timestamp('created_at', { mode: 'string', withTimezone: true }).defaultNow().notNull(),
+	updatedAt: timestamp('updated_at', { mode: 'string', withTimezone: true }).defaultNow().notNull(),
 })
 
 export const doctors = pgTable('doctors', {
@@ -28,8 +29,8 @@ export const doctors = pgTable('doctors', {
 	phone: varchar('phone', { length: 20 }).notNull(),
 	crm: varchar('crm', { length: 20 }).notNull().unique(),
 	specialty: text('specialty').notNull(),
-	createdAt: timestamp('created_at').defaultNow().notNull(),
-	updatedAt: timestamp('updated_at').defaultNow().notNull(),
+	createdAt: timestamp('created_at', { mode: 'string', withTimezone: true }).defaultNow().notNull(),
+	updatedAt: timestamp('updated_at', { mode: 'string', withTimezone: true }).defaultNow().notNull(),
 })
 
 export const appointments = pgTable('appointments', {
@@ -40,8 +41,8 @@ export const appointments = pgTable('appointments', {
 	doctorId: uuid('doctor_id')
 		.notNull()
 		.references(() => doctors.id),
-	appointmentDate: timestamp('appointment_date').notNull(),
+	appointmentDate: timestamp('appointment_date', { mode: 'string', withTimezone: true }).notNull(),
 	reason: text('reason').notNull(),
-	createdAt: timestamp('created_at').defaultNow().notNull(),
-	updatedAt: timestamp('updated_at').defaultNow().notNull(),
+	createdAt: timestamp('created_at', { mode: 'string', withTimezone: true }).defaultNow().notNull(),
+	updatedAt: timestamp('updated_at', { mode: 'string', withTimezone: true }).defaultNow().notNull(),
 })

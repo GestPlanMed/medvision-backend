@@ -1,19 +1,20 @@
 import { fastify } from 'fastify'
 
-import {
-	serializerCompiler,
-	validatorCompiler,
-	jsonSchemaTransform,
+import { 
+	serializerCompiler, 
+	validatorCompiler, 
+	jsonSchemaTransform 
 } from 'fastify-type-provider-zod'
 
 import { fastifySwagger } from '@fastify/swagger'
 import { fastifyCors } from '@fastify/cors'
 import { ZodTypeProvider } from 'fastify-type-provider-zod'
+import { authPatientRoutes } from './modules/patient/routes/auth.route'
+import { authAdminRoutes } from './modules/admin/routes/auth.route'
 
 import ScalarApiReference from '@scalar/fastify-api-reference'
 import fastifyCookie from '@fastify/cookie'
 import fastifyJwt from '@fastify/jwt'
-import { authPatientRoutes } from './modules/patient/routes/auth.route'
 
 const version = process.env.API_VERSION || '1'
 
@@ -39,6 +40,9 @@ server.register(fastifyJwt, {
 		cookieName: 'token',
 		signed: false,
 	},
+	sign: {
+		expiresIn: '24h'
+	}
 })
 
 server.register(fastifySwagger, {
@@ -56,7 +60,8 @@ server.register(ScalarApiReference, {
 	routePrefix: `/v${version}/docs`,
 })
 
-server.register(authPatientRoutes, { prefix: `/v${version}/patients/auth` })
+server.register(authAdminRoutes, { prefix: `/v${version}/admin/auth` })
+server.register(authPatientRoutes, { prefix: `/v${version}/patient/auth` })
 
 server.listen({ port: Number(process.env.PORT) || 3333, host: '0.0.0.0' }, (err, address) => {
 	if (err) {

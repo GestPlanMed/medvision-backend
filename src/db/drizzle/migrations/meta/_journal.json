@@ -1,27 +1,13 @@
 {
-	"version": "7",
-	"dialect": "postgresql",
-	"entries": [
-		{
-			"idx": 0,
-			"version": "7",
-			"when": 1762672772605,
-			"tag": "0000_graceful_rogue",
-			"breakpoints": true
-		},
-		{
-			"idx": 1,
-			"version": "7",
-			"when": 1762677339283,
-			"tag": "0001_glorious_malice",
-			"breakpoints": true
-		},
-		{
-			"idx": 2,
-			"version": "7",
-			"when": 1762678903782,
-			"tag": "0002_reflective_winter_soldier",
-			"breakpoints": true
-		}
-	]
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1762764463396,
+      "tag": "0000_previous_invisible_woman",
+      "breakpoints": true
+    }
+  ]
 }

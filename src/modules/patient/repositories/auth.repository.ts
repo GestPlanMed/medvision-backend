@@ -13,10 +13,26 @@ export class AuthRepository {
 	}
 
 	async createPatient(data: SignUpPatientInput) {
-		return await db.insert(patients).values(data).returning()
+		return await db.insert(patients).values({
+			name: data.name,
+			age: data.age,
+			cpf: data.cpf,
+			phone: data.phone,
+			address: data.address ? JSON.stringify(data.address) : null
+		}).returning()
 	}
 
 	async updatePatient(data: UpdatePatientInput) {
-		return await db.update(patients).set(data).where(eq(patients.id, data.id)).returning()
+		const { id, address, ...rest } = data
+
+		return await db
+			.update(patients)
+			.set({
+				...rest,
+				address: address ? JSON.stringify(address) : undefined,
+				updatedAt: new Date().toISOString(),
+			})
+			.where(eq(patients.id, id))
+			.returning()
 	}
 }
