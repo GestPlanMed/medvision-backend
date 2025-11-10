@@ -99,8 +99,22 @@ export class AuthController {
 				crm: Doctor[0].crm,
 			})
 
+			// Define o token no cookie
+			res.setCookie('token', token, {
+				httpOnly: true,
+				secure: process.env.NODE_ENV === 'production',
+				sameSite: 'lax',
+				path: '/',
+				maxAge: 24 * 60 * 60, // 24 horas em segundos
+			})
+
 			return res.status(200).send({
-				token,
+				message: 'Login realizado com sucesso.',
+				user: {
+					id: Doctor[0].id,
+					email: Doctor[0].email,
+					crm: Doctor[0].crm,
+				},
 			})
 		} catch (error) {
 			throw error
@@ -183,6 +197,30 @@ export class AuthController {
 			})
 
 			return res.status(200).send({ message: 'Senha redefinida com sucesso.' })
+		} catch (error) {
+			throw error
+		}
+	}
+
+	async logout(_req: FastifyRequest, res: FastifyReply) {
+		try {
+			// Remove o cookie de token
+			res.clearCookie('token', {
+				path: '/',
+			})
+
+			return res.status(200).send({ message: 'Logout realizado com sucesso.' })
+		} catch (error) {
+			throw error
+		}
+	}
+
+	async me(req: FastifyRequest, res: FastifyReply) {
+		try {
+			// O user já está disponível no request graças ao plugin de autenticação
+			return res.status(200).send({
+				user: req.user,
+			})
 		} catch (error) {
 			throw error
 		}

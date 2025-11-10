@@ -1,5 +1,5 @@
 {
-	"id": "1cb79ad7-9c2f-42ce-9d90-f17cc7d3875a",
+	"id": "dde4748d-0d13-48e9-82d3-a6a1a5df0fd7",
 	"prevId": "00000000-0000-0000-0000-000000000000",
 	"version": "7",
 	"dialect": "postgresql",
@@ -102,6 +102,13 @@
 					"type": "text",
 					"primaryKey": false,
 					"notNull": true
+				},
+				"status": {
+					"name": "status",
+					"type": "varchar(50)",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "'scheduled'"
 				},
 				"created_at": {
 					"name": "created_at",

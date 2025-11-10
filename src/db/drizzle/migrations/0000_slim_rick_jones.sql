@@ -15,6 +15,7 @@ CREATE TABLE "appointments" (
 	"doctor_id" uuid NOT NULL,
 	"appointment_date" timestamp with time zone NOT NULL,
 	"reason" text NOT NULL,
+	"status" varchar(50) DEFAULT 'scheduled' NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
 );

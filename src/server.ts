@@ -2,11 +2,14 @@ import { fastify } from 'fastify'
 
 import { serializerCompiler, validatorCompiler, jsonSchemaTransform } from 'fastify-type-provider-zod'
 
+import type { ZodTypeProvider } from 'fastify-type-provider-zod'
+
 import { fastifySwagger } from '@fastify/swagger'
 import { fastifyCors } from '@fastify/cors'
-import { ZodTypeProvider } from 'fastify-type-provider-zod'
 import { authPatientRoutes } from './modules/patient/routes/auth.route'
 import { authAdminRoutes } from './modules/admin/routes/auth.route'
+import { authDoctorRoutes } from './modules/doctor/routes/auth.route'
+import { appointmentAdminRoutes } from './modules/admin/routes/appointment.route'
 
 import ScalarApiReference from '@scalar/fastify-api-reference'
 import fastifyCookie from '@fastify/cookie'
@@ -57,13 +60,21 @@ server.register(ScalarApiReference, {
 })
 
 server.register(authAdminRoutes, { prefix: `/v${version}/admin/auth` })
+server.register(authDoctorRoutes, { prefix: `/v${version}/doctor/auth` })
+server.register(appointmentAdminRoutes, { prefix: `/v${version}/admin/appointments` })
 server.register(authPatientRoutes, { prefix: `/v${version}/patient/auth` })
 
-server.listen({ port: Number(process.env.PORT) || 3333, host: '0.0.0.0' }, (err, address) => {
-	if (err) {
+async function start() {
+	try {
+		await server.ready()
+		await server.listen({ port: Number(process.env.PORT) || 3333, host: '0.0.0.0' })
+		console.log(`Server listening at http://localhost:${Number(process.env.PORT) || 3333}`)
+		console.log(`Docs listening at http://localhost:${Number(process.env.PORT) || 3333}/v${version}/docs`)
+	} catch (err) {
+		console.error('Error starting server:', err)
 		server.log.error(err)
 		process.exit(1)
 	}
-	console.log(`Server listening at ${address}`)
-	console.log(`Docs listening at ${address}/v${version}/docs`)
-})
+}
+
+start()
