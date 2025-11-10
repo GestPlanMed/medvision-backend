@@ -142,7 +142,7 @@ export class AuthController {
 			// })
 
 			console.log(`Código de recuperação para ${Admin[0].email}: ${resetCode}`)
-			
+
 			return await res.status(200).send({ message: 'Código de recuperação enviado com sucesso.' })
 		} catch (error) {
 			throw error
@@ -182,7 +182,7 @@ export class AuthController {
 			await this.authRepository.updateAdmin({
 				id: Admin[0].id,
 				password: hashedPassword,
-				resetCode: null
+				resetCode: null,
 			})
 
 			return res.status(200).send({ message: 'Senha redefinida com sucesso.' })

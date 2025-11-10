@@ -1,10 +1,6 @@
 import { fastify } from 'fastify'
 
-import { 
-	serializerCompiler, 
-	validatorCompiler, 
-	jsonSchemaTransform 
-} from 'fastify-type-provider-zod'
+import { serializerCompiler, validatorCompiler, jsonSchemaTransform } from 'fastify-type-provider-zod'
 
 import { fastifySwagger } from '@fastify/swagger'
 import { fastifyCors } from '@fastify/cors'
@@ -41,8 +37,8 @@ server.register(fastifyJwt, {
 		signed: false,
 	},
 	sign: {
-		expiresIn: '24h'
-	}
+		expiresIn: '24h',
+	},
 })
 
 server.register(fastifySwagger, {

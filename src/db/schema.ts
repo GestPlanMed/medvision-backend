@@ -7,7 +7,7 @@ export const admins = pgTable('admins', {
 	password: text('password').notNull(),
 	resetCode: varchar('reset_code', { length: 6 }),
 	createdAt: timestamp('created_at', { mode: 'string', withTimezone: true }).defaultNow().notNull(),
-	updatedAt: timestamp('updated_at', { mode: 'string', withTimezone: true }).defaultNow().notNull()
+	updatedAt: timestamp('updated_at', { mode: 'string', withTimezone: true }).defaultNow().notNull(),
 })
 
 export const patients = pgTable('patients', {

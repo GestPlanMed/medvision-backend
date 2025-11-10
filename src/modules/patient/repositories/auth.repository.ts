@@ -13,13 +13,16 @@ export class AuthRepository {
 	}
 
 	async createPatient(data: SignUpPatientInput) {
-		return await db.insert(patients).values({
-			name: data.name,
-			age: data.age,
-			cpf: data.cpf,
-			phone: data.phone,
-			address: data.address ? JSON.stringify(data.address) : null
-		}).returning()
+		return await db
+			.insert(patients)
+			.values({
+				name: data.name,
+				age: data.age,
+				cpf: data.cpf,
+				phone: data.phone,
+				address: data.address ? JSON.stringify(data.address) : null,
+			})
+			.returning()
 	}
 
 	async updatePatient(data: UpdatePatientInput) {

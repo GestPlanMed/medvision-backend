@@ -5,12 +5,14 @@ export const SignUpPatientSchema = z.object({
 	age: z.number().min(0).max(120),
 	phone: z.string().min(10).max(15),
 	cpf: z.string().min(11).max(11),
-	address: z.object({
-		street: z.string().min(1),
-		city: z.string().min(1),
-		state: z.string().min(2).max(2),
-		zipCode: z.string().min(5).max(10),
-	}).optional(),
+	address: z
+		.object({
+			street: z.string().min(1),
+			city: z.string().min(1),
+			state: z.string().min(2).max(2),
+			zipCode: z.string().min(5).max(10),
+		})
+		.optional(),
 	code: z.string().min(6).max(6).optional(),
 })
 

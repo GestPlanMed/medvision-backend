@@ -16,7 +16,7 @@ export const UpdateAdminSchema = z.object({
 	name: z.string().min(3).max(100).optional(),
 	email: z.string().email().optional(),
 	password: z.string().min(6).max(100).optional(),
-	resetCode: z.string().length(6).optional().nullable()
+	resetCode: z.string().length(6).optional().nullable(),
 })
 
 export const ForgotPasswordAdminSchema = z.object({
