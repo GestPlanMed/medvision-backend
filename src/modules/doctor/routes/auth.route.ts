@@ -1,12 +1,9 @@
 import type { FastifyInstance } from 'fastify'
 import { AuthController } from '../controllers/auth.controller'
-import { authDoctor } from '../plugins/auth.plugin'
 
 const authController = new AuthController()
 
 export async function authDoctorRoutes(fastify: FastifyInstance) {
-	await fastify.register(authDoctor)
-
 	fastify.post('/signup', authController.createDoctor.bind(authController))
 	fastify.post('/signin', authController.signInDoctor.bind(authController))
 	fastify.post('/forgot-password', authController.forgotPassword.bind(authController))

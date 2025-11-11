@@ -100,6 +100,7 @@ export class AuthController {
 				id: Admin[0].id,
 				email: Admin[0].email,
 				name: Admin[0].name,
+				role: 'admin',
 			})
 
 			// Define o token no cookie
@@ -118,6 +119,7 @@ export class AuthController {
 					id: Admin[0].id,
 					email: Admin[0].email,
 					name: Admin[0].name,
+					role: 'admin',
 				},
 			})
 		} catch (error) {

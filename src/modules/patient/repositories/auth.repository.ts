@@ -1,7 +1,7 @@
 import { db } from '@/db'
 import { patients } from '@/db/schema'
 import { eq } from 'drizzle-orm'
-import { SignUpPatientInput, UpdatePatientInput } from '../schemas/auth.schema'
+import type { SignUpPatientInput, UpdatePatientInput } from '../schemas/auth.schema'
 
 export class AuthRepository {
 	async findPatientByCpf(cpf: string) {

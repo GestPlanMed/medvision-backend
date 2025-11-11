@@ -1,13 +1,10 @@
 import type { FastifyInstance } from 'fastify'
 
 import { AuthController } from '../controllers/auth.controller'
-import { authAdmin } from '../plugins/auth.plugin'
 
 const authController = new AuthController()
 
 export async function authAdminRoutes(fastify: FastifyInstance) {
-	await fastify.register(authAdmin)
-
 	fastify.post('/signin', authController.signInAdmin.bind(authController))
 	fastify.post('/forgot-password', authController.forgotPassword.bind(authController))
 	fastify.post('/reset-password', authController.resetPassword.bind(authController))

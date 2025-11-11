@@ -7,13 +7,13 @@ import type { ZodTypeProvider } from 'fastify-type-provider-zod'
 import { fastifySwagger } from '@fastify/swagger'
 import { fastifyCors } from '@fastify/cors'
 import { authPatientRoutes } from './modules/patient/routes/auth.route'
-import { authAdminRoutes } from './modules/admin/routes/auth.route'
+import { adminRoutes } from './modules/admin/routes/index'
 import { authDoctorRoutes } from './modules/doctor/routes/auth.route'
-import { appointmentAdminRoutes } from './modules/admin/routes/appointment.route'
 
 import ScalarApiReference from '@scalar/fastify-api-reference'
 import fastifyCookie from '@fastify/cookie'
 import fastifyJwt from '@fastify/jwt'
+import { authenticate } from './plugins/auth.plugin'
 
 const version = process.env.API_VERSION || '1'
 
@@ -44,6 +44,9 @@ server.register(fastifyJwt, {
 	},
 })
 
+// Registrar plugin de autenticação centralizado
+server.register(authenticate)
+
 server.register(fastifySwagger, {
 	openapi: {
 		info: {
@@ -59,9 +62,8 @@ server.register(ScalarApiReference, {
 	routePrefix: `/v${version}/docs`,
 })
 
-server.register(authAdminRoutes, { prefix: `/v${version}/admin/auth` })
+server.register(adminRoutes, { prefix: `/v${version}/admin` })
 server.register(authDoctorRoutes, { prefix: `/v${version}/doctor/auth` })
-server.register(appointmentAdminRoutes, { prefix: `/v${version}/admin/appointments` })
 server.register(authPatientRoutes, { prefix: `/v${version}/patient/auth` })
 
 async function start() {

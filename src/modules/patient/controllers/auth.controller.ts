@@ -120,8 +120,9 @@ export class AuthController {
 
 			const token = req.server.jwt.sign({
 				id: patient[0].id,
-				cpf: patient[0].cpf,
+				email: patient[0].email,
 				name: patient[0].name,
+				role: 'patient',
 			})
 
 			// Define o token no cookie
@@ -139,6 +140,8 @@ export class AuthController {
 					id: patient[0].id,
 					cpf: patient[0].cpf,
 					name: patient[0].name,
+					email: patient[0].email,
+					role: 'patient',
 				},
 			})
 		} catch (error) {
