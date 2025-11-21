@@ -1,15 +1,16 @@
-import ScalarApiReference from '@scalar/fastify-api-reference'
+import { fastify } from 'fastify'
 import fastifyCookie from '@fastify/cookie'
 import fastifyJwt from '@fastify/jwt'
-import { fastify } from 'fastify'
-import { serializerCompiler, validatorCompiler, jsonSchemaTransform } from 'fastify-type-provider-zod'
-import type { ZodTypeProvider } from 'fastify-type-provider-zod'
 import { fastifySwagger } from '@fastify/swagger'
 import { fastifyCors } from '@fastify/cors'
+import ScalarApiReference from '@scalar/fastify-api-reference'
+import { serializerCompiler, validatorCompiler, jsonSchemaTransform } from 'fastify-type-provider-zod'
+import type { ZodTypeProvider } from 'fastify-type-provider-zod'
+
 import { PatientAuthRoutes } from './modules/patient/routes/auth.route'
-import { doctorRoutes } from './modules/doctor/routes/auth.route'
-import { adminRoutes } from './modules/admin/routes/auth.route'
+import { AdminAuthRoutes } from './modules/admin/routes/auth.route'
 import { PatientRoutes } from './modules/patient/routes/patient.routes'
+import { DoctorAuthRoutes } from './modules/doctor/routes/auth.route'
 
 const version = process.env.API_VERSION || '1'
 
@@ -53,9 +54,10 @@ server.register(fastifySwagger, {
 
 server.register(ScalarApiReference, { routePrefix: `/v${version}/docs` })
 
-server.register(adminRoutes, { prefix: `/v${version}/admin` })
-server.register(doctorRoutes, { prefix: `/v${version}/doctor` })
+server.register(AdminAuthRoutes, { prefix: `/v${version}/admin/auth` })
+server.register(DoctorAuthRoutes, { prefix: `/v${version}/doctor/auth` })
 server.register(PatientAuthRoutes, { prefix: `/v${version}/patient/auth` })
+
 server.register(PatientRoutes, { prefix: `/v${version}/patient` })
 
 async function start() {

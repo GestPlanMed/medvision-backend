@@ -5,7 +5,6 @@ import type { SignUpDoctorInput } from '../schemas/auth.schema'
 import type { DoctorData } from '../types'
 
 export class DoctorAuthRepository {
-
 	async findByEmail(email: string): Promise<DoctorData | null> {
 		const [doctor] = await db.select().from(doctors).where(eq(doctors.email, email)).limit(1)
 

@@ -1,6 +1,7 @@
+import { eq, desc } from 'drizzle-orm'
 import { db } from '@/db'
 import { doctors } from '@/db/schema'
-import { eq, desc } from 'drizzle-orm'
+import type { CreateDoctorInput, UpdateDoctorInput } from '../schemas/doctor.schema'
 
 export class DoctorRepository {
 	async findAll() {
@@ -48,19 +49,19 @@ export class DoctorRepository {
 		return doctor
 	}
 
-	async create(data: { name: string; email: string; password: string; phone: string; specialty: string; crm: string }) {
+	async create(data: CreateDoctorInput) {
 		const [doctor] = await db.insert(doctors).values(data).returning()
 		return doctor
 	}
 
-	async update(id: string, data: { name?: string; email?: string; phone?: string; specialty?: string; crm?: string }) {
+	async update(data: UpdateDoctorInput) {
 		const [doctor] = await db
 			.update(doctors)
 			.set({
 				...data,
 				updatedAt: new Date().toISOString(),
 			})
-			.where(eq(doctors.id, id))
+			.where(eq(doctors.id, data.id))
 			.returning()
 
 		return doctor

@@ -1,8 +1,8 @@
 import type { FastifyInstance } from 'fastify'
-import { AdminAuthController } from '../controllers/auth.controller'
 import { authenticate } from '@/plugins/auth.plugin'
+import { AdminAuthController } from '../controllers/auth.controller'
 
-export async function adminRoutes(fastify: FastifyInstance) {
+export async function AdminAuthRoutes(fastify: FastifyInstance) {
 	const controller = new AdminAuthController({ fastify })
 
 	fastify.post('/signup', { preHandler: [authenticate] }, async (req, res) => controller.signup(req, res))

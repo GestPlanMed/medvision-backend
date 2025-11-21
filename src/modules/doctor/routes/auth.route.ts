@@ -2,7 +2,7 @@ import type { FastifyInstance } from 'fastify'
 import { authenticate } from '@/plugins/auth.plugin'
 import { DoctorAuthController } from '../controllers/auth.controller'
 
-export async function doctorRoutes(fastify: FastifyInstance) {
+export async function DoctorAuthRoutes(fastify: FastifyInstance) {
 	const controller = new DoctorAuthController({ fastify })
 
 	fastify.post('/signup', { preHandler: [authenticate] }, async (req, res) => controller.signup(req, res))
