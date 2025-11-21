@@ -1,45 +1,16 @@
-import type { FastifyPluginAsync, FastifyReply, FastifyRequest } from 'fastify'
-import fp from 'fastify-plugin'
+import type { FastifyReply, FastifyRequest } from 'fastify'
 
-export interface AuthUser {
-	id: string
-	email: string
-	role: 'admin' | 'doctor' | 'patient'
-	name: string
-}
+export async function authenticate(req: FastifyRequest, res: FastifyReply) {
+	const token = req.cookies.token
 
-declare module 'fastify' {
-	interface FastifyRequest {
-		user?: AuthUser
+	if (!token) {
+		return res.status(401).send({ error: 'Token não fornecido' })
 	}
 
-	interface FastifyInstance {
-		authenticate: (request: FastifyRequest, reply: FastifyReply) => Promise<void>
+	try {
+		await req.jwtVerify()
+	} catch (err) {
+		console.error('Erro ao verificar o token JWT:', err)
+		return res.status(401).send({ error: 'Token inválido' })
 	}
 }
-
-const authPlugin: FastifyPluginAsync = async (fastify) => {
-	fastify.decorate('authenticate', async (request: FastifyRequest, reply: FastifyReply) => {
-		try {
-			const token = request.cookies.token
-
-			if (!token) {
-				return reply.status(401).send({
-					message: 'Token não encontrado. Faça login novamente.',
-				})
-			}
-
-			const decoded = (await request.jwtVerify()) as AuthUser
-			request.user = decoded
-		} catch {
-			return reply.status(401).send({
-				message: 'Token inválido ou expirado.',
-			})
-		}
-	})
-}
-
-export const authenticate = fp(authPlugin, {
-	name: 'authenticate',
-	dependencies: ['@fastify/jwt', '@fastify/cookie'],
-})

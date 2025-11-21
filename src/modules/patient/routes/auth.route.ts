@@ -1,15 +1,12 @@
 import type { FastifyInstance } from 'fastify'
-import { AuthController } from '../controllers/auth.controller'
+import { PatientAuthController } from '../controllers/auth.controller'
+import { authenticate } from '@/plugins/auth.plugin'
 
-const authController = new AuthController()
+export async function PatientAuthRoutes(fastify: FastifyInstance) {
+	const controller = new PatientAuthController({ fastify })
 
-export async function authPatientRoutes(fastify: FastifyInstance) {
-	fastify.post('/signup', authController.createPatient.bind(authController))
-	fastify.post('/signin', authController.signInPatient.bind(authController))
-	fastify.post('/validate-code', authController.validateCodePatient.bind(authController))
-	fastify.post('/resend-code', authController.resendCodePatient.bind(authController))
-
-	fastify.patch('/update', { onRequest: [fastify.authenticate] }, authController.updatePatient.bind(authController))
-	fastify.post('/logout', { onRequest: [fastify.authenticate] }, authController.logout.bind(authController))
-	fastify.get('/me', { onRequest: [fastify.authenticate] }, authController.me.bind(authController))
+	fastify.post('/signup', { preHandler: [authenticate] }, async (req, res) => controller.signup(req, res))
+	fastify.post('/signin', async (req, res) => controller.signin(req, res))
+	fastify.post('/validate-code', async (req, res) => controller.validateCode(req, res))
+	fastify.post('/resend-code', async (req, res) => controller.resendCode(req, res))
 }

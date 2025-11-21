@@ -1,15 +1,12 @@
 import type { FastifyInstance } from 'fastify'
-import { AuthController } from '../controllers/auth.controller'
+import { authenticate } from '@/plugins/auth.plugin'
+import { DoctorAuthController } from '../controllers/auth.controller'
 
-const authController = new AuthController()
+export async function doctorRoutes(fastify: FastifyInstance) {
+	const controller = new DoctorAuthController({ fastify })
 
-export async function authDoctorRoutes(fastify: FastifyInstance) {
-	fastify.post('/signup', authController.createDoctor.bind(authController))
-	fastify.post('/signin', authController.signInDoctor.bind(authController))
-	fastify.post('/forgot-password', authController.forgotPassword.bind(authController))
-	fastify.post('/reset-password', authController.resetPassword.bind(authController))
-
-	fastify.patch('/update', { onRequest: [fastify.authenticate] }, authController.updateDoctor.bind(authController))
-	fastify.post('/logout', { onRequest: [fastify.authenticate] }, authController.logout.bind(authController))
-	fastify.get('/me', { onRequest: [fastify.authenticate] }, authController.me.bind(authController))
+	fastify.post('/signup', { preHandler: [authenticate] }, async (req, res) => controller.signup(req, res))
+	fastify.post('/signin', async (req, res) => controller.signin(req, res))
+	fastify.post('/recover-password', async (req, res) => controller.recoveryPassword(req, res))
+	fastify.post('/validate-code', async (req, res) => controller.validateCode(req, res))
 }

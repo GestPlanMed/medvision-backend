@@ -7,3 +7,13 @@ export interface AuthRequest extends FastifyRequest {
 	}
 	userId?: string
 }
+
+export interface AdminData {
+	id: string
+	name: string
+	email: string
+	password: string
+	resetCode?: string | null
+	createdAt: string
+	updatedAt: string
+}

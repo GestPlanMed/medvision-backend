@@ -1,207 +1,191 @@
 import type { FastifyReply, FastifyRequest } from 'fastify'
-import { AuthRepository } from '../repositories/auth.repository'
+import { createCryptoService, createJWTService } from '../../../services'
 import {
 	ResendCodePatientSchema,
 	SignInPatientSchema,
 	SignUpPatientSchema,
-	UpdatePatientSchema,
 	ValidateCodePatientSchema,
 } from '../schemas/auth.schema'
+import { PatientAuthRepository } from '../repositories/auth.repository'
 
-export class AuthController {
-	private authRepository: AuthRepository
+interface Dependencies {
+	fastify: FastifyRequest['server']
+}
 
-	constructor() {
-		this.authRepository = new AuthRepository()
+export class PatientAuthController {
+	private repository: PatientAuthRepository
+	private crypto = createCryptoService()
+	private jwt: ReturnType<typeof createJWTService>
+
+	constructor(deps: Dependencies) {
+		this.repository = new PatientAuthRepository()
+		this.jwt = createJWTService({ fastify: deps.fastify })
+		this.crypto = createCryptoService()
 	}
 
-	async createPatient(req: FastifyRequest, res: FastifyReply) {
+	async signup(req: FastifyRequest, res: FastifyReply) {
 		try {
-			const patient = SignUpPatientSchema.safeParse(req.body)
+			const validation = SignUpPatientSchema.safeParse(req.body)
 
-			if (!patient.success) {
+			if (!validation.success) {
 				return res.status(400).send({
-					message: 'Dados inválidos.',
-					errors: patient.error.format(),
+					ok: false,
+					message: 'Dados inválidos',
+					errors: validation.error.flatten(),
 				})
 			}
 
-			const patientExists = await this.authRepository.findPatientByCpf(patient.data.cpf)
+			const { cpf } = validation.data
 
-			if (patientExists.length > 0) {
-				return res.status(409).send({ message: 'Paciente já cadastrado.' })
-			}
-
-			const createdPatient = await this.authRepository.createPatient(patient.data)
-
-			return createdPatient
-		} catch (error) {
-			throw error
-		}
-	}
-
-	async updatePatient(req: FastifyRequest, res: FastifyReply) {
-		try {
-			const patient = UpdatePatientSchema.safeParse(req.body)
-
-			if (!patient.success) {
-				return res.status(400).send({
-					message: 'Dados inválidos.',
-					errors: patient.error.format(),
+			if (await this.repository.findByCPF(cpf)) {
+				return res.status(409).send({
+					ok: false,
+					message: 'CPF já cadastrado',
 				})
 			}
 
-			const patientExists = await this.authRepository.findPatientById(patient.data.id)
+			const patient = await this.repository.create(validation.data)
 
-			if (patientExists.length === 0) {
-				return res.status(404).send({ message: 'Paciente não encontrado.' })
-			}
-
-			const updatedPatient = await this.authRepository.updatePatient(patient.data)
-
-			return updatedPatient
+			return res.status(201).send({
+				ok: true,
+				message: `Paciente ${patient.name} cadastrado.`,
+			})
 		} catch (error) {
-			throw error
+			console.error('[SignUp Error]', error)
+			return res.status(500).send({
+				ok: false,
+				message: 'Erro ao cadastrar paciente',
+			})
 		}
 	}
 
-	async signInPatient(req: FastifyRequest, res: FastifyReply) {
+	async signin(req: FastifyRequest, res: FastifyReply) {
 		try {
-			const data = SignInPatientSchema.safeParse(req.body)
+			const validation = SignInPatientSchema.safeParse(req.body)
 
-			if (!data.success) {
+			if (!validation.success) {
 				return res.status(400).send({
-					message: 'Dados inválidos.',
-					errors: data.error.format(),
+					ok: false,
+					message: 'Dados inválidos',
+					errors: validation.error.flatten(),
 				})
 			}
 
-			const patient = await this.authRepository.findPatientByCpf(data.data.cpf)
+			const { cpf } = validation.data
 
-			if (patient.length === 0) {
-				return res.status(404).send({ message: 'Paciente não encontrado.' })
-			}
+			const patient = await this.repository.findByCPF(cpf)
 
-			const patientCode = Math.random().toString(36).substring(2, 8).toUpperCase()
-
-			await this.authRepository.updatePatient({
-				id: patient[0].id,
-				code: patientCode,
-			})
-
-			console.log(`Código de acesso para o paciente ${patient[0].cpf}: ${patientCode}`)
-
-			return await res.status(200).send({ message: 'Código de acesso enviado com sucesso.' })
-		} catch (error) {
-			throw error
-		}
-	}
-
-	async validateCodePatient(req: FastifyRequest, res: FastifyReply) {
-		try {
-			const data = ValidateCodePatientSchema.safeParse(req.body)
-
-			if (!data.success) {
-				return res.status(400).send({
-					message: 'Dados inválidos.',
-					errors: data.error.format(),
+			if (!patient) {
+				return res.status(401).send({
+					ok: false,
+					message: 'CPF não encontrado',
 				})
 			}
 
-			const patient = await this.authRepository.findPatientByCpf(data.data.cpf)
+			const securityCode = this.crypto.generateSecurityCode()
+			await this.repository.updateVerificationCode(patient.id, securityCode)
 
-			if (patient.length === 0) {
-				return res.status(404).send({ message: 'Paciente não encontrado.' })
-			}
+			console.log(`Código de segurança enviado para ${patient.phone}: ${securityCode}`)
 
-			if (patient[0].code !== data.data.code) {
-				return res.status(401).send({ message: 'Código inválido.' })
-			}
-
-			const token = req.server.jwt.sign({
-				id: patient[0].id,
-				email: patient[0].email,
-				name: patient[0].name,
-				role: 'patient',
-			})
-
-			// Define o token no cookie
-			res.setCookie('token', token, {
-				httpOnly: true,
-				secure: process.env.NODE_ENV === 'production',
-				sameSite: 'lax',
-				path: '/',
-				maxAge: 24 * 60 * 60, // 24 horas em segundos
-			})
-
-			return res.status(200).send({
-				message: 'Código validado com sucesso.',
-				user: {
-					id: patient[0].id,
-					cpf: patient[0].cpf,
-					name: patient[0].name,
-					email: patient[0].email,
-					role: 'patient',
-				},
+			return res.send({
+				ok: true,
+				message: 'Código de segurança enviado',
 			})
 		} catch (error) {
-			throw error
+			console.error('[SignIn Error]', error)
+			return res.status(500).send({
+				ok: false,
+				message: 'Erro ao fazer login',
+			})
 		}
 	}
 
-	async resendCodePatient(req: FastifyRequest, res: FastifyReply) {
+	async validateCode(req: FastifyRequest, res: FastifyReply) {
 		try {
-			const data = ResendCodePatientSchema.safeParse(req.body)
+			const validation = ValidateCodePatientSchema.safeParse(req.body)
 
-			if (!data.success) {
+			if (!validation.success) {
 				return res.status(400).send({
-					message: 'Dados inválidos.',
-					errors: data.error.format(),
+					ok: false,
+					message: 'Dados inválidos',
+					errors: validation.error.flatten(),
 				})
 			}
 
-			const patient = await this.authRepository.findPatientByCpf(data.data.cpf)
+			const { cpf, securityCode } = validation.data
 
-			if (patient.length === 0) {
-				return res.status(404).send({ message: 'Paciente não encontrado.' })
+			const patient = await this.repository.findByCPF(cpf)
+
+			if (!patient) {
+				return res.status(401).send({
+					ok: false,
+					message: 'CPF não encontrado',
+				})
 			}
 
-			const patientCode = Math.random().toString(36).substring(2, 8).toUpperCase()
+			const isValid = await this.repository.verifyCode(patient.id, securityCode)
 
-			await this.authRepository.updatePatient({
-				id: patient[0].id,
-				code: patientCode,
+			if (!isValid) {
+				return res.send({
+					ok: false,
+					message: 'Código inválido ou expirado',
+				})
+			}
+
+			const token = await this.jwt.generatePatientToken(patient.id, patient.cpf)
+
+			return res.send({
+				ok: true,
+				message: 'Código válido',
+				token,
 			})
-
-			console.log(`Código de acesso para o paciente ${patient[0].cpf}: ${patientCode}`)
-
-			return res.status(200).send({ message: 'Código reenviado com sucesso.' })
 		} catch (error) {
-			throw error
+			console.error('[ValidateCode Error]', error)
+			return res.status(500).send({
+				ok: false,
+				message: 'Erro ao validar código',
+			})
 		}
 	}
 
-	async logout(_req: FastifyRequest, res: FastifyReply) {
+	async resendCode(req: FastifyRequest, res: FastifyReply) {
 		try {
-			// Remove o cookie de token
-			res.clearCookie('token', {
-				path: '/',
-			})
+			const validation = ResendCodePatientSchema.safeParse(req.body)
 
-			return res.status(200).send({ message: 'Logout realizado com sucesso.' })
-		} catch (error) {
-			throw error
-		}
-	}
+			if (!validation.success) {
+				return res.status(400).send({
+					ok: false,
+					message: 'Dados inválidos',
+					errors: validation.error.flatten(),
+				})
+			}
 
-	async me(req: FastifyRequest, res: FastifyReply) {
-		try {
-			// O user já está disponível no request graças ao plugin de autenticação
-			return res.status(200).send({
-				user: req.user,
+			const { cpf } = validation.data
+
+			const patient = await this.repository.findByCPF(cpf)
+
+			if (!patient) {
+				return res.status(401).send({
+					ok: false,
+					message: 'CPF não encontrado',
+				})
+			}
+
+			const securityCode = this.crypto.generateSecurityCode()
+			await this.repository.updateVerificationCode(patient.id, securityCode)
+
+			console.log(`Código reenviado para ${patient.phone}: ${securityCode}`)
+
+			return res.send({
+				ok: true,
+				message: 'Código reenviado',
 			})
 		} catch (error) {
-			throw error
+			console.error('[ResendCode Error]', error)
+			return res.status(500).send({
+				ok: false,
+				message: 'Erro ao reenviar código',
+			})
 		}
 	}
 }

@@ -7,3 +7,17 @@ export interface AuthRequest extends FastifyRequest {
 	}
 	userId?: string
 }
+
+export interface DoctorData {
+	id: string
+	name: string
+	email: string
+	phone: string
+	crm: string
+	specialty: string
+	code?: string | null
+	password: string
+	resetCode?: string | null
+	createdAt: string
+	updatedAt: string
+}

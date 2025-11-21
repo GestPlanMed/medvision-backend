@@ -1,42 +1,82 @@
-import { db } from '@/db'
-import { doctors } from '@/db/schema'
 import { eq } from 'drizzle-orm'
-import type { SignUpDoctorInput, UpdateDoctorInput } from '../schemas/auth.schema'
+import { db } from '../../../db'
+import { doctors } from '../../../db/schema'
+import type { SignUpDoctorInput } from '../schemas/auth.schema'
+import type { DoctorData } from '../types'
 
-export class AuthRepository {
-	async findDoctorByEmail(email: string) {
-		return await db.select().from(doctors).where(eq(doctors.email, email)).limit(1)
+export class DoctorAuthRepository {
+
+	async findByEmail(email: string): Promise<DoctorData | null> {
+		const [doctor] = await db.select().from(doctors).where(eq(doctors.email, email)).limit(1)
+
+		return (doctor as DoctorData) || null
 	}
 
-	async findDoctorByCRM(crm: string) {
-		return await db.select().from(doctors).where(eq(doctors.crm, crm)).limit(1)
+	async findByCRM(crm: string): Promise<DoctorData | null> {
+		const [doctor] = await db.select().from(doctors).where(eq(doctors.crm, crm)).limit(1)
+
+		return (doctor as DoctorData) || null
 	}
 
-	async findDoctorById(id: string) {
-		return await db.select().from(doctors).where(eq(doctors.id, id)).limit(1)
+	async findById(id: string): Promise<DoctorData | null> {
+		const [doctor] = await db.select().from(doctors).where(eq(doctors.id, id)).limit(1)
+
+		return (doctor as DoctorData) || null
 	}
 
-	async createDoctor(data: SignUpDoctorInput) {
-		const [Doctor] = await db.insert(doctors).values(data).returning()
-		const { password: _password, ...DoctorWithoutPassword } = Doctor
-		return DoctorWithoutPassword
-	}
-
-	async updateDoctor(data: UpdateDoctorInput) {
-		const { id, ...rest } = data
-
-		const [Doctor] = await db
-			.update(doctors)
-			.set({
-				...rest,
-				updatedAt: new Date().toISOString(),
+	async create(data: SignUpDoctorInput & { password: string }): Promise<DoctorData> {
+		const [doctor] = await db
+			.insert(doctors)
+			.values({
+				name: data.name,
+				email: data.email,
+				phone: data.phone,
+				crm: data.crm,
+				specialty: data.specialty,
+				password: data.password,
 			})
-			.where(eq(doctors.id, id))
 			.returning()
 
-		if (!Doctor) return null
+		return doctor as DoctorData
+	}
 
-		const { password: _password, ...DoctorWithoutPassword } = Doctor
-		return DoctorWithoutPassword
+	async updatePassword(doctorId: string, hashedPassword: string): Promise<void> {
+		await db
+			.update(doctors)
+			.set({
+				password: hashedPassword,
+				updatedAt: new Date().toISOString(),
+			})
+			.where(eq(doctors.id, doctorId))
+	}
+
+	async updateResetCode(doctorId: string, code: string): Promise<void> {
+		await db
+			.update(doctors)
+			.set({
+				resetCode: code,
+				updatedAt: new Date().toISOString(),
+			})
+			.where(eq(doctors.id, doctorId))
+	}
+
+	async clearResetCode(doctorId: string): Promise<void> {
+		await db
+			.update(doctors)
+			.set({
+				resetCode: null,
+				updatedAt: new Date().toISOString(),
+			})
+			.where(eq(doctors.id, doctorId))
+	}
+
+	async emailExists(email: string): Promise<boolean> {
+		const doctor = await this.findByEmail(email)
+		return doctor !== null
+	}
+
+	async crmExists(crm: string): Promise<boolean> {
+		const doctor = await this.findByCRM(crm)
+		return doctor !== null
 	}
 }

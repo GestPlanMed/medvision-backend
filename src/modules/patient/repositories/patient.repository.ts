@@ -1,6 +1,6 @@
+import { eq, desc } from 'drizzle-orm'
 import { db } from '@/db'
 import { patients } from '@/db/schema'
-import { eq, desc } from 'drizzle-orm'
 
 export class PatientRepository {
 	async findAll() {

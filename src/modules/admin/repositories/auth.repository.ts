@@ -1,38 +1,67 @@
-import { db } from '@/db'
-import { admins } from '@/db/schema'
 import { eq } from 'drizzle-orm'
-import { SignUpAdminInput, UpdateAdminInput } from '../schemas/auth.schema'
+import { db } from '../../../db'
+import { admins } from '../../../db/schema'
+import type { SignUpAdminInput } from '../schemas/auth.schema'
+import type { AdminData } from '../types'
 
-export class AuthRepository {
-	async findAdminByEmail(email: string) {
-		return await db.select().from(admins).where(eq(admins.email, email)).limit(1)
+export class AdminAuthRepository {
+	async findByEmail(email: string): Promise<AdminData | null> {
+		const [admin] = await db.select().from(admins).where(eq(admins.email, email)).limit(1)
+
+		return (admin as AdminData) || null
 	}
 
-	async findAdminById(id: string) {
-		return await db.select().from(admins).where(eq(admins.id, id)).limit(1)
+	async findById(id: string): Promise<AdminData | null> {
+		const [admin] = await db.select().from(admins).where(eq(admins.id, id)).limit(1)
+
+		return (admin as AdminData) || null
 	}
 
-	async createAdmin(data: SignUpAdminInput) {
-		const [admin] = await db.insert(admins).values(data).returning()
-		const { password, ...adminWithoutPassword } = admin
-		return adminWithoutPassword
-	}
-
-	async updateAdmin(data: UpdateAdminInput) {
-		const { id, ...rest } = data
-
+	async create(data: SignUpAdminInput & { password: string }): Promise<AdminData> {
 		const [admin] = await db
-			.update(admins)
-			.set({
-				...rest,
-				updatedAt: new Date().toISOString(),
+			.insert(admins)
+			.values({
+				name: data.name,
+				email: data.email,
+				password: data.password,
 			})
-			.where(eq(admins.id, id))
 			.returning()
 
-		if (!admin) return null
+		return admin as AdminData
+	}
 
-		const { password, ...adminWithoutPassword } = admin
-		return adminWithoutPassword
+	async updatePassword(adminId: string, hashedPassword: string): Promise<void> {
+		await db
+			.update(admins)
+			.set({
+				password: hashedPassword,
+				updatedAt: new Date().toISOString(),
+			})
+			.where(eq(admins.id, adminId))
+	}
+
+	async updateResetCode(adminId: string, code: string): Promise<void> {
+		await db
+			.update(admins)
+			.set({
+				resetCode: code,
+				updatedAt: new Date().toISOString(),
+			})
+			.where(eq(admins.id, adminId))
+	}
+
+	async clearResetCode(adminId: string): Promise<void> {
+		await db
+			.update(admins)
+			.set({
+				resetCode: null,
+				updatedAt: new Date().toISOString(),
+			})
+			.where(eq(admins.id, adminId))
+	}
+
+	async emailExists(email: string): Promise<boolean> {
+		const admin = await this.findByEmail(email)
+		return admin !== null
 	}
 }

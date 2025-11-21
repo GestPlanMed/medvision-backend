@@ -1,16 +1,12 @@
 import type { FastifyInstance } from 'fastify'
+import { AdminAuthController } from '../controllers/auth.controller'
+import { authenticate } from '@/plugins/auth.plugin'
 
-import { AuthController } from '../controllers/auth.controller'
+export async function adminRoutes(fastify: FastifyInstance) {
+	const controller = new AdminAuthController({ fastify })
 
-const authController = new AuthController()
-
-export async function authAdminRoutes(fastify: FastifyInstance) {
-	fastify.post('/signin', authController.signInAdmin.bind(authController))
-	fastify.post('/forgot-password', authController.forgotPassword.bind(authController))
-	fastify.post('/reset-password', authController.resetPassword.bind(authController))
-	
-	fastify.post('/signup', { onRequest: [fastify.authenticate] },authController.createAdmin.bind(authController))
-	fastify.patch('/update', { onRequest: [fastify.authenticate] }, authController.updateAdmin.bind(authController))
-	fastify.post('/logout', { onRequest: [fastify.authenticate] }, authController.logout.bind(authController))
-	fastify.get('/me', { onRequest: [fastify.authenticate] }, authController.me.bind(authController))
+	fastify.post('/signup', { preHandler: [authenticate] }, async (req, res) => controller.signup(req, res))
+	fastify.post('/signin', async (req, res) => controller.signin(req, res))
+	fastify.post('/recovery-password', async (req, res) => controller.recoveryPassword(req, res))
+	fastify.post('/validate-code', async (req, res) => controller.validateCode(req, res))
 }

@@ -1,231 +1,202 @@
+import { createCryptoService, createJWTService } from '../../../services'
+import { DoctorAuthRepository } from '../repositories/auth.repository'
 import type { FastifyReply, FastifyRequest } from 'fastify'
-import { AuthRepository } from '../repositories/auth.repository'
-import {
-	ForgotPasswordDoctorSchema,
-	ResetPasswordDoctorSchema,
-	SignInDoctorSchema,
-	SignUpDoctorSchema,
-	UpdateDoctorSchema,
-} from '../schemas/auth.schema'
-import bcrypt from 'bcrypt'
+import { SignUpDoctorSchema, SignInDoctorSchema } from '../schemas/auth.schema'
 
-export class AuthController {
-	private authRepository: AuthRepository
+interface Dependencies {
+	fastify: FastifyRequest['server']
+}
 
-	constructor() {
-		this.authRepository = new AuthRepository()
+export class DoctorAuthController {
+	private repository: DoctorAuthRepository
+	private crypto = createCryptoService()
+	private jwt: ReturnType<typeof createJWTService>
+
+	constructor(deps: Dependencies) {
+		this.repository = new DoctorAuthRepository()
+		this.jwt = createJWTService({ fastify: deps.fastify })
+		this.crypto = createCryptoService()
 	}
 
-	async createDoctor(req: FastifyRequest, res: FastifyReply) {
+	async signup(req: FastifyRequest, res: FastifyReply) {
 		try {
-			const Doctor = SignUpDoctorSchema.safeParse(req.body)
+			const validation = SignUpDoctorSchema.safeParse(req.body)
 
-			if (!Doctor.success) {
+			if (!validation.success) {
 				return res.status(400).send({
-					message: 'Dados inválidos.',
-					errors: Doctor.error.format(),
+					ok: false,
+					message: 'Dados inválidos',
+					errors: validation.error.flatten(),
 				})
 			}
 
-			const DoctorExists = await this.authRepository.findDoctorByCRM(Doctor.data.crm)
+			const { email: doctorEmail, crm, password } = validation.data
 
-			if (DoctorExists.length > 0) {
-				return res.status(409).send({ message: 'Paciente já cadastrado.' })
-			}
-
-			const saltRounds = 5
-			const hashedPassword = await bcrypt.hash(Doctor.data.password, saltRounds)
-			Doctor.data.password = hashedPassword
-
-			const createdDoctor = await this.authRepository.createDoctor(Doctor.data)
-
-			return createdDoctor
-		} catch (error) {
-			throw error
-		}
-	}
-
-	async updateDoctor(req: FastifyRequest, res: FastifyReply) {
-		try {
-			const Doctor = UpdateDoctorSchema.safeParse(req.body)
-
-			if (!Doctor.success) {
-				return res.status(400).send({
-					message: 'Dados inválidos.',
-					errors: Doctor.error.format(),
+			if (await this.repository.emailExists(doctorEmail)) {
+				return res.status(409).send({
+					ok: false,
+					message: 'Email já cadastrado',
 				})
 			}
 
-			const DoctorExists = await this.authRepository.findDoctorById(Doctor.data.id)
-
-			if (DoctorExists.length === 0) {
-				return res.status(404).send({ message: 'Paciente não encontrado.' })
-			}
-
-			const updatedDoctor = await this.authRepository.updateDoctor(Doctor.data)
-
-			return updatedDoctor
-		} catch (error) {
-			throw error
-		}
-	}
-
-	async signInDoctor(req: FastifyRequest, res: FastifyReply) {
-		try {
-			const data = SignInDoctorSchema.safeParse(req.body)
-
-			if (!data.success) {
-				return res.status(400).send({
-					message: 'Dados inválidos.',
-					errors: data.error.format(),
+			if (await this.repository.crmExists(crm)) {
+				return res.status(409).send({
+					ok: false,
+					message: 'CRM já cadastrado',
 				})
 			}
 
-			const Doctor = await this.authRepository.findDoctorByEmail(data.data.email)
+			const hashedPassword = await this.crypto.hashPassword(password)
 
-			if (Doctor.length === 0) {
-				return res.status(404).send({ message: 'Doctoristrador não encontrado.' })
-			}
-
-			const isPasswordValid = await bcrypt.compare(data.data.password, Doctor[0].password)
-
-			if (!isPasswordValid) {
-				return res.status(401).send({ message: 'Credenciais inválidas.' })
-			}
-
-			const token = req.server.jwt.sign({
-				id: Doctor[0].id,
-				email: Doctor[0].email,
-				name: Doctor[0].name,
-				role: 'doctor',
+			const doctor = await this.repository.create({
+				...validation.data,
+				password: hashedPassword,
 			})
 
-			// Define o token no cookie
+			return res.status(201).send({
+				ok: true,
+				message: 'Médico cadastrado com sucesso',
+				data: {
+					doctorId: doctor.id,
+					email: doctor.email,
+				},
+			})
+		} catch (error) {
+			console.error('[DoctorSignUp Error]', error)
+			return res.status(500).send({
+				ok: false,
+				message: 'Erro ao cadastrar médico',
+			})
+		}
+	}
+
+	async signin(req: FastifyRequest, res: FastifyReply) {
+		try {
+			const validation = SignInDoctorSchema.safeParse(req.body)
+
+			if (!validation.success) {
+				return res.status(400).send({
+					ok: false,
+					message: 'Dados inválidos',
+					errors: validation.error.flatten(),
+				})
+			}
+
+			const { email: doctorEmail, password } = validation.data
+
+			const doctor = await this.repository.findByEmail(doctorEmail)
+
+			if (!doctor) {
+				return res.status(401).send({
+					ok: false,
+					message: 'Email ou senha inválidos',
+				})
+			}
+
+			const isValidPassword = await this.crypto.comparePassword(password, doctor.password)
+
+			if (!isValidPassword) {
+				return res.status(401).send({
+					ok: false,
+					message: 'Email ou senha inválidos',
+				})
+			}
+
+			const { token, refreshToken, expiresIn } = this.jwt.generateDoctorToken(doctor.id, doctor.email, doctor.crm)
+
 			res.setCookie('token', token, {
 				httpOnly: true,
 				secure: process.env.NODE_ENV === 'production',
 				sameSite: 'lax',
-				path: '/',
-				maxAge: 24 * 60 * 60, // 24 horas em segundos
+				maxAge: expiresIn,
 			})
 
-			return res.status(200).send({
-				message: 'Login realizado com sucesso.',
-				user: {
-					id: Doctor[0].id,
-					email: Doctor[0].email,
-					name: Doctor[0].name,
-					crm: Doctor[0].crm,
-					role: 'doctor',
+			res.setCookie('refreshToken', refreshToken, {
+				httpOnly: true,
+				secure: process.env.NODE_ENV === 'production',
+				sameSite: 'lax',
+				maxAge: 7 * 24 * 60 * 60,
+			})
+
+			return res.send({
+				ok: true,
+				message: 'Login realizado com sucesso',
+				data: {
+					token,
+					refreshToken,
+					expiresIn,
+					doctor: {
+						id: doctor.id,
+						name: doctor.name,
+						email: doctor.email,
+						crm: doctor.crm,
+						specialty: doctor.specialty,
+					},
 				},
 			})
 		} catch (error) {
-			throw error
+			console.error('[DoctorSignIn Error]', error)
+			return res.status(500).send({
+				ok: false,
+				message: 'Erro ao fazer login',
+			})
 		}
 	}
 
-	async forgotPassword(req: FastifyRequest, res: FastifyReply) {
+	async recoveryPassword(req: FastifyRequest, res: FastifyReply) {
 		try {
-			const data = ForgotPasswordDoctorSchema.safeParse(req.body)
+			const { email: adminEmail } = req.body as { email: string }
 
-			if (!data.success) {
-				return res.status(400).send({
-					message: 'Dados inválidos.',
-					errors: data.error.format(),
+			const admin = await this.repository.findByEmail(adminEmail)
+
+			if (!admin) {
+				return res.status(404).send({
+					ok: false,
+					message: 'Admin não encontrado',
 				})
 			}
 
-			const Doctor = await this.authRepository.findDoctorByEmail(data.data.email)
+			const recoveryCode = this.crypto.generateRandomCode(6)
+			console.log(`Código de recuperação para ${adminEmail}: ${recoveryCode}`)
 
-			if (Doctor.length === 0) {
-				return res.status(404).send({ message: 'Paciente não encontrado.' })
-			}
+			await this.repository.updateResetCode(admin.id, recoveryCode)
 
-			const resetCode = Math.random().toString(36).substring(2, 8).toUpperCase()
-
-			await this.authRepository.updateDoctor({
-				id: Doctor[0].id,
-				resetCode: resetCode,
+			return res.send({
+				ok: true,
+				message: 'Código de recuperação enviado para o email',
 			})
-
-			// TODO: Implementar envio de email com o código de recuperação
-			// await emailService.send({
-			// 	to: Doctor[0].email,
-			// 	subject: 'Recuperação de senha',
-			// 	body: `Seu código de recuperação é: ${resetCode}`
-			// })
-
-			console.log(`Código de recuperação para ${Doctor[0].email}: ${resetCode}`)
-
-			return await res.status(200).send({ message: 'Código de recuperação enviado com sucesso.' })
 		} catch (error) {
-			throw error
+			console.error('[AdminRecoveryPassword Error]', error)
+			return res.status(500).send({
+				ok: false,
+				message: 'Erro ao recuperar senha',
+			})
 		}
 	}
 
-	async resetPassword(req: FastifyRequest, res: FastifyReply) {
+	async validateCode(req: FastifyRequest, res: FastifyReply) {
 		try {
-			const data = ResetPasswordDoctorSchema.safeParse(req.body)
+			const { email: adminEmail, code } = req.body as { email: string; code: string }
 
-			if (!data.success) {
+			const admin = await this.repository.findByEmail(adminEmail)
+
+			if (!admin || admin.resetCode !== code) {
 				return res.status(400).send({
-					message: 'Dados inválidos.',
-					errors: data.error.format(),
+					ok: false,
+					message: 'Código inválido',
 				})
 			}
 
-			const Doctor = await this.authRepository.findDoctorByEmail(data.data.email)
-
-			if (Doctor.length === 0) {
-				return res.status(404).send({ message: 'Doctoristrador não encontrado.' })
-			}
-
-			// Verifica se existe um código de recuperação
-			if (!Doctor[0].resetCode) {
-				return res.status(400).send({ message: 'Nenhum código de recuperação foi solicitado.' })
-			}
-
-			// Verifica se o código informado está correto
-			if (Doctor[0].resetCode !== data.data.code) {
-				return res.status(400).send({ message: 'Código de recuperação inválido.' })
-			}
-
-			const saltRounds = 5
-			const hashedPassword = await bcrypt.hash(data.data.newPassword, saltRounds)
-
-			await this.authRepository.updateDoctor({
-				id: Doctor[0].id,
-				password: hashedPassword,
-				resetCode: null,
-			})
-
-			return res.status(200).send({ message: 'Senha redefinida com sucesso.' })
-		} catch (error) {
-			throw error
-		}
-	}
-
-	async logout(_req: FastifyRequest, res: FastifyReply) {
-		try {
-			// Remove o cookie de token
-			res.clearCookie('token', {
-				path: '/',
-			})
-
-			return res.status(200).send({ message: 'Logout realizado com sucesso.' })
-		} catch (error) {
-			throw error
-		}
-	}
-
-	async me(req: FastifyRequest, res: FastifyReply) {
-		try {
-			// O user já está disponível no request graças ao plugin de autenticação
-			return res.status(200).send({
-				user: req.user,
+			return res.send({
+				ok: true,
+				message: 'Código válido',
 			})
 		} catch (error) {
-			throw error
+			console.error('[AdminValideCode Error]', error)
+			return res.status(500).send({
+				ok: false,
+				message: 'Erro ao validar código',
+			})
 		}
 	}
 }
