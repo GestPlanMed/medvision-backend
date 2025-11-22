@@ -1,9 +1,3 @@
-/**
- * @fileoverview
- * Serviço de JWT - Geração e validação de tokens
- * Responsável por: criar tokens, refresh tokens, validar
- */
-
 import type { FastifyInstance } from 'fastify'
 import type { JWTPayload, PatientJWTPayload, DoctorJWTPayload, AdminJWTPayload } from '../types/auth.types'
 import { TOKEN_EXPIRATION, REFRESH_TOKEN_EXPIRATION } from '../types/auth.types'

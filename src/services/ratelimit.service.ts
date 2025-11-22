@@ -1,9 +1,3 @@
-/**
- * @fileoverview
- * Serviço de Rate Limiting - Proteção contra abuso
- * Responsável por: limitar requisições, proteção brute force
- */
-
 interface RateLimitConfig {
 	windowMs: number // Janela de tempo em ms
 	maxRequests: number // Máximo de requisições permitidas
@@ -18,9 +12,6 @@ interface RequestLog {
 export function createRateLimitService() {
 	const store = new Map<string, RequestLog>()
 
-	/**
-	 * Limpar registros expirados
-	 */
 	function cleanup(): void {
 		const now = Date.now()
 		for (const [key, log] of store.entries()) {
@@ -31,9 +22,6 @@ export function createRateLimitService() {
 		}
 	}
 
-	/**
-	 * Verificar se cliente excedeu limite
-	 */
 	function isLimited(identifier: string, config: RateLimitConfig): boolean {
 		const now = Date.now()
 		const log = store.get(identifier)
@@ -53,9 +41,6 @@ export function createRateLimitService() {
 		return false
 	}
 
-	/**
-	 * Obter informações de limite atual
-	 */
 	function getStatus(identifier: string, windowMs: number): { remaining: number; resetAt: number } {
 		const log = store.get(identifier)
 
@@ -69,16 +54,10 @@ export function createRateLimitService() {
 		return { remaining, resetAt }
 	}
 
-	/**
-	 * Resetar limite para um cliente
-	 */
 	function reset(identifier: string): void {
 		store.delete(identifier)
 	}
 
-	/**
-	 * Limitar requisições gerais (login, signup, etc)
-	 */
 	function checkGeneralLimit(identifier: string): boolean {
 		return isLimited(identifier, {
 			windowMs: 15 * 60 * 1000, // 15 minutos
@@ -86,9 +65,6 @@ export function createRateLimitService() {
 		})
 	}
 
-	/**
-	 * Limitar tentativas de login
-	 */
 	function checkLoginLimit(identifier: string): boolean {
 		return isLimited(identifier, {
 			windowMs: 15 * 60 * 1000, // 15 minutos
@@ -96,9 +72,6 @@ export function createRateLimitService() {
 		})
 	}
 
-	/**
-	 * Limitar tentativas de 2FA
-	 */
 	function check2FALimit(identifier: string): boolean {
 		return isLimited(identifier, {
 			windowMs: 10 * 60 * 1000, // 10 minutos
@@ -106,9 +79,6 @@ export function createRateLimitService() {
 		})
 	}
 
-	/**
-	 * Limitar requisições de verificação de email
-	 */
 	function checkVerificationLimit(identifier: string): boolean {
 		return isLimited(identifier, {
 			windowMs: 60 * 60 * 1000, // 1 hora
@@ -116,9 +86,6 @@ export function createRateLimitService() {
 		})
 	}
 
-	/**
-	 * Limitar requisições de redefinição de senha
-	 */
 	function checkPasswordResetLimit(identifier: string): boolean {
 		return isLimited(identifier, {
 			windowMs: 60 * 60 * 1000, // 1 hora
@@ -126,9 +93,6 @@ export function createRateLimitService() {
 		})
 	}
 
-	/**
-	 * Executar limpeza periódica (call a cada 5 minutos)
-	 */
 	function startCleanupInterval(): NodeJS.Timeout {
 		return setInterval(cleanup, 5 * 60 * 1000)
 	}

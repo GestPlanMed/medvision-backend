@@ -103,7 +103,6 @@ export class AdminAuthController {
 				})
 			}
 
-			// Gerar um sessionId simples (pode ser aprimorado para algo mais seguro)
 			const sessionId = this.crypto.generateRandomCode() ? this.crypto.generateRandomCode(32) : `${Date.now()}-${admin.id}`
 			const { token, refreshToken, expiresIn } = this.jwt.generateAdminToken(admin.id, admin.email, sessionId)
 
