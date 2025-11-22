@@ -1,66 +1,60 @@
-import { eq } from 'drizzle-orm'
-import { db } from '../../../db'
-import { admins } from '../../../db/schema'
+import { db } from '@/lib/prisma'
 import type { SignUpAdminInput } from '../schemas/auth.schema'
-import type { AdminData } from '../types'
 
 export class AdminAuthRepository {
-	async findByEmail(email: string): Promise<AdminData | null> {
-		const [admin] = await db.select().from(admins).where(eq(admins.email, email)).limit(1)
-
-		return (admin as AdminData) || null
+	async findByEmail(email: string) {
+		return await db.admin.findUnique({
+			where: { email },
+		})
 	}
 
-	async findById(id: string): Promise<AdminData | null> {
-		const [admin] = await db.select().from(admins).where(eq(admins.id, id)).limit(1)
-
-		return (admin as AdminData) || null
+	async findById(id: string) {
+		return await db.admin.findUnique({
+			where: { id },
+		})
 	}
 
-	async create(data: SignUpAdminInput & { password: string }): Promise<AdminData> {
-		const [admin] = await db
-			.insert(admins)
-			.values({
+	async create(data: SignUpAdminInput & { password: string }) {
+		return await db.admin.create({
+			data: {
 				name: data.name,
 				email: data.email,
 				password: data.password,
-			})
-			.returning()
-
-		return admin as AdminData
+			},
+		})
 	}
 
-	async updatePassword(adminId: string, hashedPassword: string): Promise<void> {
-		await db
-			.update(admins)
-			.set({
+	async updatePassword(adminId: string, hashedPassword: string) {
+		await db.admin.update({
+			where: { id: adminId },
+			data: {
 				password: hashedPassword,
-				updatedAt: new Date().toISOString(),
-			})
-			.where(eq(admins.id, adminId))
+				updatedAt: new Date(),
+			},
+		})
 	}
 
-	async updateResetCode(adminId: string, code: string): Promise<void> {
-		await db
-			.update(admins)
-			.set({
+	async updateResetCode(adminId: string, code: string) {
+		await db.admin.update({
+			where: { id: adminId },
+			data: {
 				resetCode: code,
-				updatedAt: new Date().toISOString(),
-			})
-			.where(eq(admins.id, adminId))
+				updatedAt: new Date(),
+			},
+		})
 	}
 
-	async clearResetCode(adminId: string): Promise<void> {
-		await db
-			.update(admins)
-			.set({
+	async clearResetCode(adminId: string) {
+		await db.admin.update({
+			where: { id: adminId },
+			data: {
 				resetCode: null,
-				updatedAt: new Date().toISOString(),
-			})
-			.where(eq(admins.id, adminId))
+				updatedAt: new Date(),
+			},
+		})
 	}
 
-	async emailExists(email: string): Promise<boolean> {
+	async emailExists(email: string) {
 		const admin = await this.findByEmail(email)
 		return admin !== null
 	}

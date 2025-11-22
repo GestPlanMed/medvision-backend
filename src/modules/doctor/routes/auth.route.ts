@@ -7,6 +7,6 @@ export async function DoctorAuthRoutes(fastify: FastifyInstance) {
 
 	fastify.post('/signup', { preHandler: [authenticate] }, async (req, res) => controller.signup(req, res))
 	fastify.post('/signin', async (req, res) => controller.signin(req, res))
-	fastify.post('/recover-password', async (req, res) => controller.recoveryPassword(req, res))
+	fastify.post('/recovery-password', async (req, res) => controller.recoveryPassword(req, res))
 	fastify.post('/validate-code', async (req, res) => controller.validateCode(req, res))
 }

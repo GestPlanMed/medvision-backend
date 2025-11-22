@@ -168,7 +168,7 @@ export class AdminAuthController {
 
 			return res.send({
 				ok: true,
-				message: 'Código válido',
+				message: 'Código válido'
 			})
 		} catch (error) {
 			console.error('[AdminValideCode Error]', error)

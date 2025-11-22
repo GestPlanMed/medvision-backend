@@ -1,57 +1,48 @@
-import { eq } from 'drizzle-orm'
-import { db } from '../../../db'
-import { patients } from '../../../db/schema'
+import { db } from '@/lib/prisma'
 import type { SignUpPatientInput } from '../schemas/auth.schema'
-import type { PatientData } from '../types'
 
 export class PatientAuthRepository {
-	async findByCPF(cpf: string): Promise<PatientData | null> {
-		const [patient] = await db.select().from(patients).where(eq(patients.cpf, cpf)).limit(1)
-
-		return (patient as PatientData) || null
+	async findByCPF(cpf: string) {
+		return await db.patient.findUnique({
+			where: { cpf },
+		})
 	}
 
-	async findById(id: string): Promise<PatientData | null> {
-		const [patient] = await db.select().from(patients).where(eq(patients.id, id)).limit(1)
-
-		return (patient as PatientData) || null
+	async findById(id: string) {
+		return await db.patient.findUnique({
+			where: { id },
+		})
 	}
 
-	async findByPhone(phone: string): Promise<PatientData | null> {
-		const [patient] = await db.select().from(patients).where(eq(patients.phone, phone)).limit(1)
-
-		return (patient as PatientData) || null
+	async findByPhone(phone: string) {
+		return await db.patient.findFirst({
+			where: { phone },
+		})
 	}
 
-	async create(data: SignUpPatientInput): Promise<PatientData> {
-		const [patient] = await db
-			.insert(patients)
-			.values({
+	async create(data: SignUpPatientInput) {
+		return await db.patient.create({
+			data: {
 				name: data.name,
 				age: data.age,
 				cpf: data.cpf,
 				phone: data.phone,
 				address: data.address,
-			})
-			.returning()
-
-		return patient as PatientData
+			},
+		})
 	}
 
-	async updateVerificationCode(patientId: string, code: string): Promise<PatientData> {
-		const [updated] = await db
-			.update(patients)
-			.set({
+	async updateVerificationCode(patientId: string, code: string) {
+		return await db.patient.update({
+			where: { id: patientId },
+			data: {
 				code,
-				updatedAt: new Date().toISOString(),
-			})
-			.where(eq(patients.id, patientId))
-			.returning()
-
-		return updated as PatientData
+				updatedAt: new Date(),
+			}
+		})
 	}
 
-	async verifyCode(patientId: string, code: string): Promise<boolean> {
+	async verifyCode(patientId: string, code: string) {
 		const patient = await this.findById(patientId)
 
 		if (!patient || !patient.code) {
@@ -61,22 +52,22 @@ export class PatientAuthRepository {
 		return patient.code === code
 	}
 
-	async clearVerificationCode(patientId: string): Promise<void> {
-		await db
-			.update(patients)
-			.set({
+	async clearVerificationCode(patientId: string) {
+		await db.patient.update({
+			where: { id: patientId },
+			data: {
 				code: null,
-				updatedAt: new Date().toISOString(),
-			})
-			.where(eq(patients.id, patientId))
+				updatedAt: new Date(),
+			},
+		})
 	}
 
-	async cpfExists(cpf: string): Promise<boolean> {
+	async cpfExists(cpf: string) {
 		const patient = await this.findByCPF(cpf)
 		return patient !== null
 	}
 
-	async phoneExists(phone: string): Promise<boolean> {
+	async phoneExists(phone: string) {
 		const patient = await this.findByPhone(phone)
 		return patient !== null
 	}

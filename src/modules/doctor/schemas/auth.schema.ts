@@ -17,37 +17,12 @@ export const SignUpDoctorSchema = z.object({
 		.max(100, 'Especialidade deve ter no máximo 100 caracteres'),
 	password: z
 		.string()
-		.regex(strongPasswordRegex, 'Senha deve conter: maiúscula, minúscula, número e mínimo 8 caracteres'),
+		.min(8, 'Senha deve conter: mínimo 8 caracteres'),
 })
 
 export const SignInDoctorSchema = z.object({
 	email: z.string().email('Email inválido'),
-	password: z.string().min(1, 'Senha é obrigatória'),
-	totpCode: z
-		.string()
-		.length(6, 'Código TOTP deve ter 6 dígitos')
-		.regex(/^\d{6}$/, 'Código TOTP deve conter apenas números')
-		.optional(),
-})
-
-export const VerifyTwoFactorDoctorSchema = z.object({
-	email: z.string().email('Email inválido'),
-	tempToken: z.string().min(1, 'Token temporário é obrigatório').optional(),
-	totpCode: z
-		.string()
-		.length(6, 'Código TOTP deve ter 6 dígitos')
-		.regex(/^\d{6}$/, 'Código TOTP deve conter apenas números'),
-})
-
-export const SetupTwoFactorDoctorSchema = z.object({
-	method: z.enum(['totp', 'sms', 'email']),
-})
-
-export const ConfirmTwoFactorDoctorSchema = z.object({
-	totpCode: z
-		.string()
-		.length(6, 'Código TOTP deve ter 6 dígitos')
-		.regex(/^\d{6}$/, 'Código TOTP deve conter apenas números'),
+	password: z.string().min(1, 'Senha é obrigatória')
 })
 
 export const ForgotPasswordDoctorSchema = z.object({
@@ -92,9 +67,6 @@ export const ChangePasswordDoctorSchema = z.object({
 
 export type SignUpDoctorInput = z.infer<typeof SignUpDoctorSchema>
 export type SignInDoctorInput = z.infer<typeof SignInDoctorSchema>
-export type VerifyTwoFactorDoctorInput = z.infer<typeof VerifyTwoFactorDoctorSchema>
-export type SetupTwoFactorDoctorInput = z.infer<typeof SetupTwoFactorDoctorSchema>
-export type ConfirmTwoFactorDoctorInput = z.infer<typeof ConfirmTwoFactorDoctorSchema>
 export type ForgotPasswordDoctorInput = z.infer<typeof ForgotPasswordDoctorSchema>
 export type ResetPasswordDoctorInput = z.infer<typeof ResetPasswordDoctorSchema>
 export type RefreshTokenDoctorInput = z.infer<typeof RefreshTokenDoctorSchema>

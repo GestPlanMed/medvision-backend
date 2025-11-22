@@ -1,0 +1,99 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Admin {
+    id        String   @id @default(uuid())
+    name      String
+    email     String   @unique
+    password  String
+    resetCode String?  
+    createdAt DateTime @default(now()) 
+    updatedAt DateTime @updatedAt
+
+    @@map("admins")
+}
+
+model Patient {
+    id           String        @id @default(uuid())
+    name         String
+    age          Int
+    cpf          String        @unique
+    phone        String
+    address      String?
+    code         String?       @unique
+    createdAt    DateTime      @default(now()) 
+    updatedAt    DateTime      @updatedAt 
+    appointments Appointment[]
+    prescriptions Prescription[]
+
+    @@map("patients")
+}
+
+model Doctor {
+    id           String        @id @default(uuid())
+    name         String
+    email        String        @unique
+    phone        String        
+    crm          String        @unique
+    specialty    String
+    code         String?       @unique
+    password     String
+    resetCode    String?       
+    createdAt    DateTime      @default(now()) 
+    updatedAt    DateTime      @updatedAt
+    appointments Appointment[]
+    prescriptions Prescription[]
+
+    @@map("doctors")
+}
+
+model Appointment {
+    id              String   @id @default(uuid())
+    patientId       String
+    doctorId        String
+    appointmentDate DateTime @db.Timestamptz()
+    reason          String
+    status          String   @default("scheduled") 
+    createdAt       DateTime @default(now()) 
+    updatedAt       DateTime @updatedAt 
+
+    patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+    doctor  Doctor  @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+    prescriptions Prescription[]
+
+    @@unique([patientId, doctorId, appointmentDate])
+    @@index([patientId])
+    @@index([doctorId])
+    @@map("appointments")
+}
+
+model Prescription {
+	id              String      @id @default(uuid())
+	patientId       String
+	doctorId        String
+	appointmentId   String?
+	content         String      
+	status          PrescriptionStatus      @default(active)
+	createdAt       DateTime    @default(now())
+	updatedAt       DateTime    @updatedAt
+
+	patient         Patient     @relation(fields: [patientId], references: [id], onDelete: Cascade)
+	doctor          Doctor      @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+	appointment     Appointment? @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
+
+	@@index([patientId])
+	@@index([doctorId])
+	@@map("prescriptions")
+}
+
+enum PrescriptionStatus {
+	active
+	expired
+	cancelled
+}

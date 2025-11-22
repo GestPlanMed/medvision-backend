@@ -30,12 +30,12 @@ export class DoctorController {
 			return res.status(500).send({ error: 'An error occurred while fetching the doctor.' })
 		}
 	}
-	
+
 	async updateDoctor(req: FastifyRequest, res: FastifyReply) {
 		try {
 			const updateData = UpdateDoctorSchema.safeParse(req.body)
 
-			if(!updateData.success) {
+			if (!updateData.success) {
 				return res.status(400).send({ error: 'Erro no corpo da requisição', details: updateData.error.issues })
 			}
 

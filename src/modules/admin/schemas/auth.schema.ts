@@ -1,13 +1,11 @@
 import z from 'zod'
 
-const veryStrongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[a-zA-Z\d@$!%*?&]{12,100}$/
-
 export const SignUpAdminSchema = z.object({
 	name: z.string().min(3, 'Nome deve ter no mínimo 3 caracteres').max(100, 'Nome deve ter no máximo 100 caracteres'),
 	email: z.string().email('Email inválido').endsWith('.com', 'Email corporativo obrigatório'),
 	password: z
 		.string()
-		.regex(veryStrongPasswordRegex, 'Senha deve conter: maiúscula, minúscula, número, símbolo e mínimo 12 caracteres'),
+		.min(8, 'Senha deve conter: mínimo 8 caracteres'),
 })
 
 export const SignInAdminSchema = z.object({
@@ -55,7 +53,7 @@ export const ResetPasswordAdminSchema = z.object({
 		.regex(/^\d{6}$/, 'Código deve conter apenas números'),
 	newPassword: z
 		.string()
-		.regex(veryStrongPasswordRegex, 'Senha deve conter: maiúscula, minúscula, número, símbolo e mínimo 12 caracteres'),
+		.min(8, 'Senha deve conter: mínimo 8 caracteres'),
 })
 
 export const RefreshTokenAdminSchema = z.object({
@@ -74,7 +72,7 @@ export const ChangePasswordAdminSchema = z.object({
 	currentPassword: z.string().min(1, 'Senha atual é obrigatória'),
 	newPassword: z
 		.string()
-		.regex(veryStrongPasswordRegex, 'Senha deve conter: maiúscula, minúscula, número, símbolo e mínimo 12 caracteres'),
+		.min(8, 'Senha deve conter: mínimo 8 caracteres'),
 	totpCode: z
 		.string()
 		.length(6, 'Código TOTP deve ter 6 dígitos')
@@ -91,7 +89,7 @@ export const UpdateAdminSchema = z.object({
 	email: z.string().email('Email inválido').optional(),
 	password: z
 		.string()
-		.regex(veryStrongPasswordRegex, 'Senha deve conter: maiúscula, minúscula, número, símbolo e mínimo 12 caracteres')
+		.min(8, 'Senha deve conter: mínimo 8 caracteres')
 		.optional(),
 })
 

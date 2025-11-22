@@ -11,6 +11,7 @@ import { PatientAuthRoutes } from './modules/patient/routes/auth.route'
 import { AdminAuthRoutes } from './modules/admin/routes/auth.route'
 import { PatientRoutes } from './modules/patient/routes/patient.routes'
 import { DoctorAuthRoutes } from './modules/doctor/routes/auth.route'
+import { DoctorRoutes } from './modules/doctor/routes/doctor.route'
 
 const version = process.env.API_VERSION || '1'
 
@@ -59,6 +60,7 @@ server.register(DoctorAuthRoutes, { prefix: `/v${version}/doctor/auth` })
 server.register(PatientAuthRoutes, { prefix: `/v${version}/patient/auth` })
 
 server.register(PatientRoutes, { prefix: `/v${version}/patient` })
+server.register(DoctorRoutes, { prefix: `/v${version}/doctor` })
 
 async function start() {
 	try {

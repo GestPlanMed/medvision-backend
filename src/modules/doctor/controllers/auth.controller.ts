@@ -55,11 +55,7 @@ export class DoctorAuthController {
 
 			return res.status(201).send({
 				ok: true,
-				message: 'Médico cadastrado com sucesso',
-				data: {
-					doctorId: doctor.id,
-					email: doctor.email,
-				},
+				message: `Médico cadastrado com sucesso: ${doctor.name}`,
 			})
 		} catch (error) {
 			console.error('[DoctorSignUp Error]', error)
