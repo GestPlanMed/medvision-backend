@@ -3,9 +3,7 @@ import z from 'zod'
 export const SignUpAdminSchema = z.object({
 	name: z.string().min(3, 'Nome deve ter no mínimo 3 caracteres').max(100, 'Nome deve ter no máximo 100 caracteres'),
 	email: z.string().email('Email inválido').endsWith('.com', 'Email corporativo obrigatório'),
-	password: z
-		.string()
-		.min(8, 'Senha deve conter: mínimo 8 caracteres'),
+	password: z.string().min(8, 'Senha deve conter: mínimo 8 caracteres'),
 })
 
 export const SignInAdminSchema = z.object({
@@ -51,9 +49,7 @@ export const ResetPasswordAdminSchema = z.object({
 		.string()
 		.length(6, 'Código de reset deve ter 6 dígitos')
 		.regex(/^\d{6}$/, 'Código deve conter apenas números'),
-	newPassword: z
-		.string()
-		.min(8, 'Senha deve conter: mínimo 8 caracteres'),
+	newPassword: z.string().min(8, 'Senha deve conter: mínimo 8 caracteres'),
 })
 
 export const RefreshTokenAdminSchema = z.object({
@@ -70,9 +66,7 @@ export const UpdateAdminProfileSchema = z.object({
 
 export const ChangePasswordAdminSchema = z.object({
 	currentPassword: z.string().min(1, 'Senha atual é obrigatória'),
-	newPassword: z
-		.string()
-		.min(8, 'Senha deve conter: mínimo 8 caracteres'),
+	newPassword: z.string().min(8, 'Senha deve conter: mínimo 8 caracteres'),
 	totpCode: z
 		.string()
 		.length(6, 'Código TOTP deve ter 6 dígitos')
@@ -87,10 +81,7 @@ export const UpdateAdminSchema = z.object({
 		.max(100, 'Nome deve ter no máximo 100 caracteres')
 		.optional(),
 	email: z.string().email('Email inválido').optional(),
-	password: z
-		.string()
-		.min(8, 'Senha deve conter: mínimo 8 caracteres')
-		.optional(),
+	password: z.string().min(8, 'Senha deve conter: mínimo 8 caracteres').optional(),
 })
 
 export const TerminateSessionAdminSchema = z.object({

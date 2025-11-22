@@ -42,11 +42,16 @@ model Doctor {
     phone        String        
     crm          String        @unique
     specialty    String
+	monthlySlots Int     @default(0)
+    weeklyAvailability Json?
+
     code         String?       @unique
     password     String
     resetCode    String?       
+
     createdAt    DateTime      @default(now()) 
     updatedAt    DateTime      @updatedAt
+
     appointments Appointment[]
     prescriptions Prescription[]
 
@@ -59,7 +64,10 @@ model Appointment {
     doctorId        String
     appointmentDate DateTime @db.Timestamptz()
     reason          String
-    status          String   @default("scheduled") 
+    status          String   @default("scheduled")
+    notes           String?
+    linkCall        String
+
     createdAt       DateTime @default(now()) 
     updatedAt       DateTime @updatedAt 
 

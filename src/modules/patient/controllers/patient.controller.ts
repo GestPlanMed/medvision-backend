@@ -10,8 +10,7 @@ export class PatientController {
 
 	async getPatientProfile(req: FastifyRequest, res: FastifyReply) {
 		try {
-
-			if(req.user?.role !== 'patient') {
+			if (req.user?.role !== 'patient') {
 				return res.status(403).send({
 					ok: false,
 					message: 'Acesso negado',
@@ -44,8 +43,7 @@ export class PatientController {
 
 	async getAllPatients(req: FastifyRequest, res: FastifyReply) {
 		try {
-
-			if(req.user?.role !== 'admin') {
+			if (req.user?.role !== 'admin') {
 				return res.status(403).send({
 					ok: false,
 					message: 'Acesso negado',
@@ -57,7 +55,7 @@ export class PatientController {
 			return res.status(200).send({
 				ok: true,
 				data: {
-					patients
+					patients,
 				},
 			})
 		} catch (error) {

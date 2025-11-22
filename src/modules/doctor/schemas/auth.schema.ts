@@ -15,14 +15,12 @@ export const SignUpDoctorSchema = z.object({
 		.string()
 		.min(3, 'Especialidade deve ter no mínimo 3 caracteres')
 		.max(100, 'Especialidade deve ter no máximo 100 caracteres'),
-	password: z
-		.string()
-		.min(8, 'Senha deve conter: mínimo 8 caracteres'),
+	password: z.string().min(8, 'Senha deve conter: mínimo 8 caracteres'),
 })
 
 export const SignInDoctorSchema = z.object({
 	email: z.string().email('Email inválido'),
-	password: z.string().min(1, 'Senha é obrigatória')
+	password: z.string().min(1, 'Senha é obrigatória'),
 })
 
 export const ForgotPasswordDoctorSchema = z.object({

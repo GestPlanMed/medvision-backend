@@ -1,6 +1,6 @@
-import { fastify } from 'fastify'
 import fastifyCookie from '@fastify/cookie'
 import fastifyJwt from '@fastify/jwt'
+import { fastify } from 'fastify'
 import { fastifySwagger } from '@fastify/swagger'
 import { fastifyCors } from '@fastify/cors'
 import ScalarApiReference from '@scalar/fastify-api-reference'
@@ -12,6 +12,7 @@ import { AdminAuthRoutes } from './modules/admin/routes/auth.route'
 import { PatientRoutes } from './modules/patient/routes/patient.routes'
 import { DoctorAuthRoutes } from './modules/doctor/routes/auth.route'
 import { DoctorRoutes } from './modules/doctor/routes/doctor.route'
+import { AppointmentRoutes } from './modules/appointment/routes/appointment.route'
 
 const version = process.env.API_VERSION || '1'
 
@@ -61,6 +62,7 @@ server.register(PatientAuthRoutes, { prefix: `/v${version}/patient/auth` })
 
 server.register(PatientRoutes, { prefix: `/v${version}/patient` })
 server.register(DoctorRoutes, { prefix: `/v${version}/doctor` })
+server.register(AppointmentRoutes, { prefix: `/v${version}/appointment` })
 
 async function start() {
 	try {

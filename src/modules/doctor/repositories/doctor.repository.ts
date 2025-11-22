@@ -12,7 +12,7 @@ export class DoctorRepository {
 				specialty: true,
 				crm: true,
 				createdAt: true,
-				appointments: true
+				appointments: true,
 			},
 			orderBy: {
 				createdAt: 'desc',
@@ -69,5 +69,39 @@ export class DoctorRepository {
 		await db.doctor.delete({
 			where: { id },
 		})
+	}
+
+	async hasAvailableSlot(doctorId: string, date: string): Promise<boolean> {
+		const appointmentDate = new Date(date)
+
+		const doctor = await db.doctor.findUnique({
+			where: { id: doctorId },
+			select: { monthlySlots: true },
+		})
+		if (!doctor) return false
+
+		const startOfMonth = new Date(appointmentDate.getFullYear(), appointmentDate.getMonth(), 1)
+		const endOfMonth = new Date(appointmentDate.getFullYear(), appointmentDate.getMonth() + 1, 0, 23, 59, 59, 999)
+
+		const monthlyAppointments = await db.appointment.count({
+			where: {
+				doctorId,
+				date: {
+					gte: startOfMonth,
+					lte: endOfMonth,
+				},
+			},
+		})
+
+		if (monthlyAppointments >= (doctor.monthlySlots ?? 0)) return false
+
+		const slotTaken = await db.appointment.findFirst({
+			where: {
+				doctorId,
+				date,
+			},
+		})
+
+		return !slotTaken
 	}
 }

@@ -38,7 +38,7 @@ export class PatientAuthRepository {
 			data: {
 				code,
 				updatedAt: new Date(),
-			}
+			},
 		})
 	}
 

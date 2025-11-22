@@ -25,14 +25,13 @@ export class PatientAuthController {
 
 	async signup(req: FastifyRequest, res: FastifyReply) {
 		try {
-
-			if(req.user?.role !== 'admin') {
+			if (req.user?.role !== 'admin') {
 				return res.status(403).send({
 					ok: false,
 					message: 'Acesso negado',
 				})
 			}
-			
+
 			const validation = SignUpPatientSchema.safeParse(req.body)
 
 			if (!validation.success) {
@@ -146,8 +145,8 @@ export class PatientAuthController {
 				ok: true,
 				message: 'Código válido',
 				data: {
-					token
-				}
+					token,
+				},
 			})
 		} catch (error) {
 			console.error('[ValidateCode Error]', error)
