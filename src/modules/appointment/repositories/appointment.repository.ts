@@ -11,7 +11,25 @@ export class AppointmentRepository {
 	}
 
 	async findAll() {
-		return await db.appointment.findMany()
+		return await db.appointment.findMany({
+			include: {
+				prescriptions: true,
+				doctor: {
+					select: {
+						id: true,
+						name: true,
+						specialty: true,
+					},
+				},
+				patient: {
+					select: {
+						id: true,
+						name: true,
+						cpf: true,
+					}
+				}
+			}
+		})
 	}
 
 	async update(updateData: UpdateAppointmentInput) {
