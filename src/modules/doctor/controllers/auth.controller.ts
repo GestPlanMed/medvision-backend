@@ -20,6 +20,14 @@ export class DoctorAuthController {
 
 	async signup(req: FastifyRequest, res: FastifyReply) {
 		try {
+
+			if(req.user?.role !== 'admin') {
+				return res.status(403).send({
+					ok: false,
+					message: 'Acesso negado',
+				})
+			}
+
 			const validation = SignUpDoctorSchema.safeParse(req.body)
 
 			if (!validation.success) {

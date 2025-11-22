@@ -9,8 +9,15 @@ export class DoctorController {
 		this.repository = new DoctorRepository()
 	}
 
-	async getAllDoctors() {
+	async getAllDoctors(req: FastifyRequest, res: FastifyReply) {
 		try {
+			if(req.user?.role !== 'admin') {
+				return res.status(403).send({
+					ok: false,
+					message: 'Acesso negado',
+				})
+			}
+
 			return await this.repository.findAll()
 		} catch (error) {
 			throw new Error(`Failed to get all doctors: ${error}`)
@@ -19,6 +26,14 @@ export class DoctorController {
 
 	async getDoctorById(req: FastifyRequest, res: FastifyReply) {
 		try {
+
+			if(req.user?.role === 'patient') {
+				return res.status(403).send({
+					ok: false,
+					message: 'Acesso negado',
+				})
+			}
+
 			const { id } = req.params as { id: string }
 			const doctor = await this.repository.findById(id)
 			if (!doctor) {
@@ -33,6 +48,14 @@ export class DoctorController {
 
 	async updateDoctor(req: FastifyRequest, res: FastifyReply) {
 		try {
+
+			if(req.user?.role === 'patient') {
+				return res.status(403).send({
+					ok: false,
+					message: 'Acesso negado',
+				})
+			}
+
 			const updateData = UpdateDoctorSchema.safeParse(req.body)
 
 			if (!updateData.success) {

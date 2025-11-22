@@ -10,6 +10,14 @@ export class PatientController {
 
 	async getPatientProfile(req: FastifyRequest, res: FastifyReply) {
 		try {
+
+			if(req.user?.role !== 'patient') {
+				return res.status(403).send({
+					ok: false,
+					message: 'Acesso negado',
+				})
+			}
+
 			const { patientId } = req.query as { patientId: string }
 
 			const patient = await this.repository.findById(patientId)
@@ -30,6 +38,33 @@ export class PatientController {
 			return res.status(500).send({
 				ok: false,
 				message: 'Erro ao buscar perfil do paciente',
+			})
+		}
+	}
+
+	async getAllPatients(req: FastifyRequest, res: FastifyReply) {
+		try {
+
+			if(req.user?.role !== 'admin') {
+				return res.status(403).send({
+					ok: false,
+					message: 'Acesso negado',
+				})
+			}
+
+			const patients = await this.repository.findAll()
+
+			return res.status(200).send({
+				ok: true,
+				data: {
+					patients
+				},
+			})
+		} catch (error) {
+			console.error('[GetAllPatients Error]', error)
+			return res.status(500).send({
+				ok: false,
+				message: 'Erro ao buscar pacientes',
 			})
 		}
 	}

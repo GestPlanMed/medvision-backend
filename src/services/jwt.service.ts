@@ -15,9 +15,6 @@ interface JWTServiceConfig {
 export function createJWTService(config: JWTServiceConfig) {
 	const { fastify } = config
 
-	/**
-	 * Gerar token JWT para paciente
-	 */
 	function generatePatientToken(
 		patientId: string,
 		cpf: string,
@@ -46,9 +43,6 @@ export function createJWTService(config: JWTServiceConfig) {
 		return { token, refreshToken, expiresIn }
 	}
 
-	/**
-	 * Gerar token JWT para médico
-	 */
 	function generateDoctorToken(
 		doctorId: string,
 		email: string,
@@ -79,9 +73,6 @@ export function createJWTService(config: JWTServiceConfig) {
 		return { token, refreshToken, expiresIn }
 	}
 
-	/**
-	 * Gerar token JWT para admin
-	 */
 	function generateAdminToken(
 		adminId: string,
 		email: string,
@@ -112,24 +103,6 @@ export function createJWTService(config: JWTServiceConfig) {
 		return { token, refreshToken, expiresIn }
 	}
 
-	/**
-	 * Gerar token temporário para 2FA (5 minutos)
-	 */
-	function generateTempToken(userId: string, role: 'doctor' | 'admin'): string {
-		const payload = {
-			sub: userId,
-			role,
-			iat: Math.floor(Date.now() / 1000),
-			exp: Math.floor(Date.now() / 1000) + 300, // 5 minutos
-			type: 'temp_2fa',
-		}
-
-		return fastify.jwt.sign(payload, { expiresIn: '5m' })
-	}
-
-	/**
-	 * Verificar e decodificar token
-	 */
 	function verifyToken(token: string): JWTPayload | null {
 		try {
 			const decoded = fastify.jwt.verify(token) as JWTPayload
@@ -139,9 +112,6 @@ export function createJWTService(config: JWTServiceConfig) {
 		}
 	}
 
-	/**
-	 * Verificar token de refresh
-	 */
 	function verifyRefreshToken(token: string): JWTPayload | null {
 		try {
 			const decoded = fastify.jwt.verify(token) as JWTPayload
@@ -155,7 +125,6 @@ export function createJWTService(config: JWTServiceConfig) {
 		generatePatientToken,
 		generateDoctorToken,
 		generateAdminToken,
-		generateTempToken,
 		verifyToken,
 		verifyRefreshToken,
 	}
