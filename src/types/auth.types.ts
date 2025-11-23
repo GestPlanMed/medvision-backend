@@ -52,7 +52,6 @@ export interface DoctorJWTPayload extends JWTBasePayload {
 export interface AdminJWTPayload extends JWTBasePayload {
 	role: 'admin'
 	email: string
-	sessionId: string
 }
 
 export type JWTPayload = PatientJWTPayload | DoctorJWTPayload | AdminJWTPayload

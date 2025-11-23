@@ -139,13 +139,27 @@ export class PatientAuthController {
 				})
 			}
 
-			const token = await this.jwt.generatePatientToken(patient.id, patient.cpf)
+			const { token, refreshToken, expiresIn } = await this.jwt.generatePatientToken(patient.id, patient.cpf)
+
+			res.setCookie('token', token, {
+				httpOnly: true,
+				secure: process.env.NODE_ENV === 'production',
+				sameSite: 'lax',
+				maxAge: expiresIn,
+			})
 
 			return res.send({
 				ok: true,
 				message: 'Código válido',
 				data: {
 					token,
+					refreshToken,
+					expiresIn,
+					patient: {
+						id: patient.id,
+						name: patient.name,
+						cpf: patient.cpf,
+					}
 				},
 			})
 		} catch (error) {

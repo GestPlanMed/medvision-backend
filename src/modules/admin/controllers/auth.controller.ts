@@ -102,8 +102,14 @@ export class AdminAuthController {
 				})
 			}
 
-			const sessionId = this.crypto.generateRandomCode() ? this.crypto.generateRandomCode(32) : `${Date.now()}-${admin.id}`
-			const { token, refreshToken, expiresIn } = this.jwt.generateAdminToken(admin.id, admin.email, sessionId)
+			const { token, refreshToken, expiresIn } = this.jwt.generateAdminToken(admin.id, admin.email)
+
+			res.setCookie('token', token, {
+				httpOnly: true,
+				secure: process.env.NODE_ENV === 'production',
+				sameSite: 'lax',
+				maxAge: expiresIn,
+			})
 
 			return res.send({
 				ok: true,
@@ -116,8 +122,8 @@ export class AdminAuthController {
 						id: admin.id,
 						email: admin.email,
 						name: admin.name,
-					},
-				},
+					}
+				}
 			})
 		} catch (error) {
 			console.error('[AdminSignIn Error]', error)
@@ -181,6 +187,42 @@ export class AdminAuthController {
 			return res.status(500).send({
 				ok: false,
 				message: 'Erro ao validar código',
+			})
+		}
+	}
+
+	async getProfile(req: FastifyRequest, res: FastifyReply) {
+		try {
+
+			if (req.user.role !== 'admin') {
+				return res.status(401).send({
+					ok: false,
+					message: 'Não autorizado',
+				})
+			}
+
+			const admin = await this.repository.findById(req.user.sub)
+
+			if (!admin) {
+				return res.status(404).send({
+					ok: false,
+					message: 'Admin não encontrado',
+				})
+			}
+
+			return res.send({
+				ok: true,
+				data: {
+					id: admin.id,
+					email: admin.email,
+					name: admin.name,
+				}
+			})
+		} catch (error) {
+			console.error('[AdminGetProfile Error]', error)
+			return res.status(500).send({
+				ok: false,
+				message: 'Erro ao obter perfil',
 			})
 		}
 	}

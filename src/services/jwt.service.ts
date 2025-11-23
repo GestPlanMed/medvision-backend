@@ -70,7 +70,6 @@ export function createJWTService(config: JWTServiceConfig) {
 	function generateAdminToken(
 		adminId: string,
 		email: string,
-		sessionId: string,
 	): {
 		token: string
 		refreshToken: string
@@ -81,7 +80,6 @@ export function createJWTService(config: JWTServiceConfig) {
 			sub: adminId,
 			role: 'admin',
 			email,
-			sessionId,
 			iat: Math.floor(Date.now() / 1000),
 			exp: Math.floor(Date.now() / 1000) + expiresIn,
 			aud: 'medvision',
