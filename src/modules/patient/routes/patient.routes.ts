@@ -7,4 +7,5 @@ const controller = new PatientController()
 export async function PatientRoutes(fastify: FastifyInstance) {
 	fastify.get('/profile', { preHandler: [authenticate] }, async (req, res) => controller.getPatientProfile(req, res))
 	fastify.get('/', { preHandler: [authenticate] }, async (req, res) => controller.getAllPatients(req, res))
+	fastify.patch('/update', { preHandler: [authenticate] }, async (req, res) => controller.updatePatient(req, res))
 }

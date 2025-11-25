@@ -3,6 +3,21 @@ import bcrypt from 'bcrypt'
 const SALT_ROUNDS = 10
 
 export function createCryptoService() {
+
+	async function generatePassword(size: number): Promise<string> {
+		try {
+			const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+[]{}|;:,.<>?'
+			let password = ''
+			for (let i = 0; i < size; i++) {
+				const randomIndex = Math.floor(Math.random() * chars.length)
+				password += chars[randomIndex]
+			}
+			return password
+		} catch {
+			throw new Error('Erro ao gerar senha')
+		}
+	}
+
 	async function hashPassword(password: string): Promise<string> {
 		try {
 			return await bcrypt.hash(password, SALT_ROUNDS)
@@ -62,6 +77,7 @@ export function createCryptoService() {
 		hashToken,
 		isValidCPFFormat,
 		sanitizeInput,
+		generatePassword
 	}
 }
 

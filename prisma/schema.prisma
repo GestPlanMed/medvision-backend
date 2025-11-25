@@ -25,7 +25,7 @@ model Patient {
     age          Int
     cpf          String        @unique
     phone        String
-    address      String?
+    address      Json?
     code         String?       @unique
     createdAt    DateTime      @default(now()) 
     updatedAt    DateTime      @updatedAt 
@@ -44,6 +44,7 @@ model Doctor {
     specialty    String
 	monthlySlots Int     @default(0)
     weeklyAvailability Json?
+    status       String        @default("active")
 
     code         String?       @unique
     password     String

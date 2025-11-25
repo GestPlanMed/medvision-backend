@@ -3,43 +3,74 @@ import type { SignUpPatientInput } from '../schemas/auth.schema'
 
 export class PatientAuthRepository {
 	async findByCPF(cpf: string) {
-		return await db.patient.findUnique({
+		const patient = await db.patient.findUnique({
 			where: { cpf },
 		})
+
+		if (!patient) return null
+
+		return patient
 	}
 
 	async findById(id: string) {
-		return await db.patient.findUnique({
+		const patient = await db.patient.findUnique({
 			where: { id },
 		})
+
+		if (!patient) return null
+
+		return patient
 	}
 
 	async findByPhone(phone: string) {
-		return await db.patient.findFirst({
+		const patient = await db.patient.findFirst({
 			where: { phone },
 		})
+
+		if (!patient) return null
+
+		return patient
 	}
 
 	async create(data: SignUpPatientInput) {
-		return await db.patient.create({
+		// Converter address para objeto JSON se for string
+		let addressData: object | undefined = undefined
+		if (data.address) {
+			if (typeof data.address === 'string' && data.address.trim()) {
+				try {
+					addressData = JSON.parse(data.address)
+				} catch {
+					// Se não for JSON válido, não salvar
+					addressData = undefined
+				}
+			} else if (typeof data.address === 'object') {
+				addressData = data.address
+			}
+		}
+
+		const patient = await db.patient.create({
 			data: {
 				name: data.name,
 				age: data.age,
 				cpf: data.cpf,
 				phone: data.phone,
-				address: data.address,
+				address: addressData,
 			},
 		})
+
+		return patient
 	}
 
 	async updateVerificationCode(patientId: string, code: string) {
-		return await db.patient.update({
+		const patient = await db.patient.update({
 			where: { id: patientId },
 			data: {
 				code,
 				updatedAt: new Date(),
 			},
 		})
+
+		return patient
 	}
 
 	async verifyCode(patientId: string, code: string) {

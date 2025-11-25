@@ -2,8 +2,6 @@ import z from 'zod'
 
 const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d@$!%*?&]{8,100}$/
 
-const phoneRegex = /^(\+?55\s?)?(\(?\d{2}\)?)?(?:9\d{4}-?\d{4}|\d{4}-?\d{4})$/
-
 const crmRegex = /^\d{4,6}\/[A-Z]{2}$/
 
 export const CreateDoctorSchema = z.object({
@@ -15,6 +13,17 @@ export const CreateDoctorSchema = z.object({
 	password: z
 		.string()
 		.regex(strongPasswordRegex, 'Senha deve conter: maiúscula, minúscula, número e mínimo 8 caracteres'),
+	monthlySlots: z.number().int().nonnegative(),
+	weeklyAvailability: z.object({
+		sunday: z.boolean(),
+		monday: z.boolean(),
+		tuesday: z.boolean(),
+		wednesday: z.boolean(),
+		thursday: z.boolean(),
+		friday: z.boolean(),
+		saturday: z.boolean(),
+	}).optional(),
+	status: z.string().default('active').optional(),
 })
 
 export const DoctorSchema = CreateDoctorSchema.extend({
@@ -31,7 +40,7 @@ export const UpdateDoctorSchema = z.object({
 		.max(100, 'Nome deve ter no máximo 100 caracteres')
 		.optional(),
 	email: z.string().email('Email inválido').optional(),
-	phone: z.string().regex(phoneRegex, 'Formato de telefone inválido').optional(),
+	phone: z.string().min(10).max(15).optional(),
 	crm: z.string().regex(crmRegex, 'Formato de CRM inválido (ex: 12345/SP)').optional(),
 	specialty: z
 		.string()
@@ -42,6 +51,17 @@ export const UpdateDoctorSchema = z.object({
 		.string()
 		.regex(strongPasswordRegex, 'Senha deve conter: maiúscula, minúscula, número e mínimo 8 caracteres')
 		.optional(),
+	monthlySlots: z.number().int().nonnegative().optional(),
+	weeklyAvailability: z.object({
+		sunday: z.boolean(),
+		monday: z.boolean(),
+		tuesday: z.boolean(),
+		wednesday: z.boolean(),
+		thursday: z.boolean(),
+		friday: z.boolean(),
+		saturday: z.boolean(),
+	}).optional(),
+	status: z.string().optional(),
 })
 
 export type CreateDoctorInput = z.infer<typeof CreateDoctorSchema>

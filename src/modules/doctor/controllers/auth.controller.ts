@@ -53,7 +53,9 @@ export class DoctorAuthController {
 				})
 			}
 
-			const hashedPassword = await this.crypto.hashPassword(password)
+			const generatedPassword = password || await this.crypto.generatePassword(8);
+
+			const hashedPassword = await this.crypto.hashPassword(generatedPassword)
 
 			const doctor = await this.repository.create({
 				...validation.data,
@@ -63,6 +65,9 @@ export class DoctorAuthController {
 			return res.status(201).send({
 				ok: true,
 				message: `Médico cadastrado com sucesso: ${doctor.name}`,
+				data: {
+					doctor
+				}
 			})
 		} catch (error) {
 			console.error('[DoctorSignUp Error]', error)

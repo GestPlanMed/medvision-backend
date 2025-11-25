@@ -23,7 +23,7 @@ server.setSerializerCompiler(serializerCompiler)
 
 server.register(fastifyCors, {
 	origin: ['http://localhost:5173'],
-	methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+	methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
 	credentials: true,
 })
 
@@ -35,12 +35,12 @@ server.register(fastifyCookie, {
 server.register(fastifyJwt, {
 	secret: process.env.JWT_SECRET || '',
 	cookie: {
-		cookieName: 'token',
+		cookieName: 'med_vision_token',
 		signed: false,
 	},
 	sign: {
 		expiresIn: '24h',
-	},
+	}
 })
 
 server.register(fastifySwagger, {

@@ -4,8 +4,8 @@ export const CreateAppointmentSchema = z.object({
 	patientId: z.string().uuid(),
 	doctorId: z.string().uuid(),
 	appointmentDate: z.string().datetime(),
-	reason: z.string().min(5).max(500),
-	linkCall: z.string().url(),
+	reason: z.string().max(500),
+	linkCall: z.string().url().optional(),
 })
 
 export const UpdateAppointmentSchema = z.object({
@@ -13,8 +13,8 @@ export const UpdateAppointmentSchema = z.object({
 	patientId: z.string().uuid().optional(),
 	doctorId: z.string().uuid().optional(),
 	appointmentDate: z.string().datetime().optional(),
-	reason: z.string().min(5).max(500).optional(),
-	notes: z.string().min(0).max(1000).optional(),
+	reason: z.string().max(500).optional(),
+	notes: z.string().max(1000).optional(),
 	linkCall: z.string().url().optional(),
 	status: z.enum(['scheduled', 'completed', 'canceled']).optional(),
 })

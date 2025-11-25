@@ -9,13 +9,13 @@ const crmRegex = /^\d{4,6}\/[A-Z]{2}$/
 export const SignUpDoctorSchema = z.object({
 	name: z.string().min(3, 'Nome deve ter no mínimo 3 caracteres').max(100, 'Nome deve ter no máximo 100 caracteres'),
 	email: z.string().email('Email inválido').endsWith('.com', 'Email corporativo obrigatório'),
-	phone: z.string().regex(phoneRegex, 'Formato de telefone inválido'),
+	phone: z.string().min(10, 'Telefone deve ter no mínimo 10 dígitos').max(15, 'Telefone deve ter no máximo 15 caracteres'),
 	crm: z.string().regex(crmRegex, 'Formato de CRM inválido (ex: 12345/SP)'),
 	specialty: z
 		.string()
 		.min(3, 'Especialidade deve ter no mínimo 3 caracteres')
 		.max(100, 'Especialidade deve ter no máximo 100 caracteres'),
-	password: z.string().min(8, 'Senha deve conter: mínimo 8 caracteres'),
+	password: z.string().min(8, 'Senha deve conter: mínimo 8 caracteres').optional(),
 })
 
 export const SignInDoctorSchema = z.object({

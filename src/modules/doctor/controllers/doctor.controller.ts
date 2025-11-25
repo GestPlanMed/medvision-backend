@@ -18,7 +18,14 @@ export class DoctorController {
 				})
 			}
 
-			return await this.repository.findAll()
+			const doctors = await this.repository.findAll()
+
+			return res.status(200).send({
+				ok: true,
+				data: {
+					doctors,
+				}
+			})
 		} catch (error) {
 			throw new Error(`Failed to get all doctors: ${error}`)
 		}
@@ -66,7 +73,13 @@ export class DoctorController {
 				return res.status(404).send({ error: 'Doctor not found.' })
 			}
 
-			return res.status(200).send(updatedDoctor)
+			return res.status(200).send({
+				ok: true,
+				message: 'Médico atualizado com sucesso',
+				data: {
+					doctor: updatedDoctor,
+				},
+			})
 		} catch (error) {
 			console.error('Error updating doctor:', error)
 			return res.status(500).send({ error: 'An error occurred while updating the doctor.' })

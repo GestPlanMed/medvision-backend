@@ -43,9 +43,9 @@ export class AppointmentController {
 				})
 			}
 
-			const link = ''
+			const link = `https://meet.fake/${Math.random().toString(36).substring(2, 10)}`
 
-			await this.repository.create({
+			const appointment = await this.repository.create({
 				...appointmentData.data,
 				linkCall: link,
 			})
@@ -53,6 +53,9 @@ export class AppointmentController {
 			return res.status(201).send({
 				ok: true,
 				message: `Agendamento criado com sucesso`,
+				data: {
+					appointment,
+				}
 			})
 		} catch (error) {
 			return res.status(500).send({
@@ -115,11 +118,14 @@ export class AppointmentController {
 				})
 			}
 
-			await this.repository.update(appointmentData.data)
+			const updatedAppointment = await this.repository.update(appointmentData.data)
 
 			return res.status(200).send({
 				ok: true,
 				message: `Agendamento atualizado com sucesso`,
+				data: {
+					appointment: updatedAppointment
+				}
 			})
 		} catch (error) {
 			return res.status(500).send({

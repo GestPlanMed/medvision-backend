@@ -11,6 +11,9 @@ export class DoctorRepository {
 				phone: true,
 				specialty: true,
 				crm: true,
+				monthlySlots: true,
+				weeklyAvailability: true,
+				status: true,
 				createdAt: true,
 				appointments: true,
 			},
@@ -30,6 +33,9 @@ export class DoctorRepository {
 				phone: true,
 				specialty: true,
 				crm: true,
+				monthlySlots: true,
+				weeklyAvailability: true,
+				status: true,
 				createdAt: true,
 			},
 		})
@@ -86,7 +92,7 @@ export class DoctorRepository {
 		const monthlyAppointments = await db.appointment.count({
 			where: {
 				doctorId,
-				date: {
+				appointmentDate: {
 					gte: startOfMonth,
 					lte: endOfMonth,
 				},
@@ -98,7 +104,7 @@ export class DoctorRepository {
 		const slotTaken = await db.appointment.findFirst({
 			where: {
 				doctorId,
-				date,
+				appointmentDate: date,
 			},
 		})
 

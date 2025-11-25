@@ -56,6 +56,9 @@ export class PatientAuthController {
 			return res.status(201).send({
 				ok: true,
 				message: `Paciente ${patient.name} cadastrado.`,
+				data: {
+					patient
+				}
 			})
 		} catch (error) {
 			console.error('[SignUp Error]', error)

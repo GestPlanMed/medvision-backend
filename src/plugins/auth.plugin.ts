@@ -1,7 +1,7 @@
 import type { FastifyReply, FastifyRequest } from 'fastify'
 
 export async function authenticate(req: FastifyRequest, res: FastifyReply) {
-	const token = req.cookies.token
+	const token = req.cookies.med_vision_token
 
 	if (!token) {
 		return res.status(401).send({ error: 'Token não fornecido' })
@@ -11,6 +11,6 @@ export async function authenticate(req: FastifyRequest, res: FastifyReply) {
 		await req.jwtVerify()
 	} catch (err) {
 		console.error('Erro ao verificar o token JWT:', err)
-		return res.status(401).send({ error: 'Token inválido' })
+		return res.status(450).send({ error: 'Token inválido' })
 	}
 }
