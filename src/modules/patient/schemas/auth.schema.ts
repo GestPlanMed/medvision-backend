@@ -12,6 +12,7 @@ export const SignUpPatientSchema = z.object({
 		.string()
 		.min(11, 'CPF deve ter no mínimo 11 dígitos')
 		.max(14, 'CPF deve ter no máximo 14 caracteres'),
+	gender: z.enum(['male', 'female']),
 	address: z
 		.object({
 			number: z.string().min(1, 'Número é obrigatório'),
@@ -71,6 +72,7 @@ export const UpdatePatientProfileSchema = z.object({
 		.optional(),
 	phone: z.string().min(10, 'Telefone deve ter no mínimo 10 dígitos').max(15, 'Telefone deve ter no máximo 15 caracteres').regex(phoneRegex, 'Formato de telefone inválido').optional(),
 	address: z.union([z.string(), z.object({}).passthrough()]).optional().nullable(),
+	gender: z.enum(['male', 'female']).optional(),
 })
 
 export const UpdatePatientSchema = z.object({
@@ -82,6 +84,7 @@ export const UpdatePatientSchema = z.object({
 		.optional(),
 	age: z.number().min(0, 'Idade não pode ser negativa').max(120, 'Idade inválida').optional(),
 	phone: z.string().regex(phoneRegex, 'Formato de telefone inválido').optional(),
+	gender: z.enum(['male', 'female']).optional(),
 	address: z.union([z.string(), z.object({}).passthrough()]).optional().nullable(),
 })
 

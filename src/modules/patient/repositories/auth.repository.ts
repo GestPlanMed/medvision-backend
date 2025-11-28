@@ -5,6 +5,9 @@ export class PatientAuthRepository {
 	async findByCPF(cpf: string) {
 		const patient = await db.patient.findUnique({
 			where: { cpf },
+			include: {
+				appointments: true,
+			},
 		})
 
 		if (!patient) return null
@@ -54,6 +57,7 @@ export class PatientAuthRepository {
 				age: data.age,
 				cpf: data.cpf,
 				phone: data.phone,
+				gender: data.gender,
 				address: addressData,
 			},
 		})

@@ -72,8 +72,11 @@ model Appointment {
     notes           String?
     roomName        String
     durationMinutes Int?
-    finishedAt      DateTime?
+    
+    feedbackPatient String?
+    feedbackDoctor  String?
 
+    finishedAt      DateTime?
     createdAt       DateTime @default(now()) 
     updatedAt       DateTime @updatedAt 
 

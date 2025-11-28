@@ -162,6 +162,7 @@ export class PatientAuthController {
 						id: patient.id,
 						name: patient.name,
 						cpf: patient.cpf,
+						appointments: patient.appointments,
 					}
 				},
 			})
