@@ -29,7 +29,9 @@ export class PatientController {
 
 			return res.status(200).send({
 				ok: true,
-				data: patient,
+				data: {
+					patient
+				},
 			})
 		} catch (error) {
 			console.error('[GetPatientProfile Error]', error)
