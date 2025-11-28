@@ -1,6 +1,9 @@
 -- CreateEnum
 CREATE TYPE "PrescriptionStatus" AS ENUM ('active', 'expired', 'cancelled');
 
+-- CreateEnum
+CREATE TYPE "Genders" AS ENUM ('male', 'female');
+
 -- CreateTable
 CREATE TABLE "admins" (
     "id" TEXT NOT NULL,
@@ -21,6 +24,7 @@ CREATE TABLE "patients" (
     "age" INTEGER NOT NULL,
     "cpf" TEXT NOT NULL,
     "phone" TEXT NOT NULL,
+    "gender" "Genders" NOT NULL,
     "address" JSONB,
     "code" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -58,7 +62,9 @@ CREATE TABLE "appointments" (
     "reason" TEXT NOT NULL,
     "status" TEXT NOT NULL DEFAULT 'scheduled',
     "notes" TEXT,
-    "linkCall" TEXT NOT NULL,
+    "roomName" TEXT NOT NULL,
+    "durationMinutes" INTEGER,
+    "finishedAt" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 

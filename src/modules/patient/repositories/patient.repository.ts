@@ -63,6 +63,7 @@ export class PatientRepository {
 						status: true,
 						reason: true,
 						createdAt: true,
+						linkCall: true,
 						doctor: {
 							select: {
 								id: true,

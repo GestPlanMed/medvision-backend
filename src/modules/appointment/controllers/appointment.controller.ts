@@ -2,6 +2,7 @@ import type { FastifyReply, FastifyRequest } from 'fastify'
 import { AppointmentRepository } from '../repositories/appointment.repository'
 import { CreateAppointmentSchema, UpdateAppointmentSchema } from '../schemas/appointment.schema'
 import { DoctorRepository } from '@/modules/doctor/repositories/doctor.repository'
+import { createCryptoService } from '@/services'
 
 export class AppointmentController {
 	private repository: AppointmentRepository
@@ -43,11 +44,11 @@ export class AppointmentController {
 				})
 			}
 
-			const link = `https://jitsi.njsolutions.com.br/consulta-${Math.random().toString(36).substring(2, 10)}`
+			const roomName = `consulta_${createCryptoService().generateRandomCode(10)}`
 
 			const appointment = await this.repository.create({
 				...appointmentData.data,
-				linkCall: link,
+				roomName: roomName,
 			})
 
 			return res.status(201).send({
@@ -92,7 +93,7 @@ export class AppointmentController {
 
 	async updateAppointment(req: FastifyRequest, res: FastifyReply) {
 		try {
-			if (req.user?.role !== 'admin') {
+			if (req.user?.role === 'patient') {
 				return res.status(403).send({
 					ok: false,
 					message: 'Acesso negado',
@@ -114,7 +115,7 @@ export class AppointmentController {
 			if (!existingAppointment) {
 				return res.status(404).send({
 					ok: false,
-					message: 'Agendamento não encontrado',
+					message: 'Consulta não encontrada',
 				})
 			}
 
@@ -122,7 +123,7 @@ export class AppointmentController {
 
 			return res.status(200).send({
 				ok: true,
-				message: `Agendamento atualizado com sucesso`,
+				message: `Consulta atualizada com sucesso`,
 				data: {
 					appointment: updatedAppointment
 				}
@@ -130,7 +131,7 @@ export class AppointmentController {
 		} catch (error) {
 			return res.status(500).send({
 				ok: false,
-				message: `Erro ao atualizar agendamento: ${error}`,
+				message: `Erro ao atualizar consulta: ${error}`,
 			})
 		}
 	}
