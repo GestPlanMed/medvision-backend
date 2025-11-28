@@ -18,9 +18,7 @@ export class PatientController {
 				})
 			}
 
-			const { patientId } = req.query as { patientId: string }
-
-			const patient = await this.repository.findById(patientId)
+			const patient = await this.repository.findById(req.user.sub)
 
 			if (!patient) {
 				return res.status(404).send({

@@ -43,7 +43,7 @@ export class AppointmentController {
 				})
 			}
 
-			const link = `https://meet.fake/${Math.random().toString(36).substring(2, 10)}`
+			const link = `https://jitsi.njsolutions.com.br/consulta-${Math.random().toString(36).substring(2, 10)}`
 
 			const appointment = await this.repository.create({
 				...appointmentData.data,
