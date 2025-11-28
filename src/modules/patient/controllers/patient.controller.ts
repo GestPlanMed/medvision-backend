@@ -31,7 +31,7 @@ export class PatientController {
 				ok: true,
 				data: {
 					patient
-				},
+				}
 			})
 		} catch (error) {
 			console.error('[GetPatientProfile Error]', error)
