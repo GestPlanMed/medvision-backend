@@ -207,4 +207,79 @@ export class DoctorAuthController {
 			})
 		}
 	}
+
+	async resetPassword(req: FastifyRequest, res: FastifyReply) {
+		try {
+			const { email, password } = req.body as { email: string; password: string }
+
+			const doctor = await this.repository.findByEmail(email)
+
+			if (!doctor) {
+				return res.status(400).send({
+					ok: false,
+					message: 'Médico não encontrado',
+				})
+			}
+
+			const hashedPassword = await this.crypto.hashPassword(password)
+
+			await this.repository.updatePassword(doctor.id, hashedPassword)
+			await this.repository.updateResetCode(doctor.id, null)
+
+			return res.send({
+				ok: true,
+				message: 'Senha atualizada com sucesso',
+			})
+		} catch (error) {
+			console.error('[AdminResetPassword Error]', error)
+			return res.status(500).send({
+				ok: false,
+				message: 'Erro ao resetar senha',
+			})
+		}
+	}
+
+	async getProfile(req: FastifyRequest, res: FastifyReply) {
+		try {
+			
+			const doctorId = req.user?.sub
+
+			if (req.user?.role !== 'doctor' || !doctorId) {
+				return res.status(401).send({
+					ok: false,
+					message: 'Não autorizado',
+				})
+			}
+
+			const doctor = await this.repository.findById(doctorId)
+
+			if (!doctor) {
+				return res.status(404).send({
+					ok: false,
+					message: 'Médico não encontrado',
+				})
+			}
+
+			return res.send({
+				ok: true,
+				message: 'Perfil obtido com sucesso',
+				data: {
+					doctor: {
+						id: doctor.id,
+						name: doctor.name,
+						email: doctor.email,
+						crm: doctor.crm,
+						specialty: doctor.specialty,
+						appointments: doctor.appointments,
+					},
+				},
+			})
+		} catch (error) {
+			console.error('[DoctorGetProfile Error]', error)
+			return res.status(500).send({
+				ok: false,
+				message: 'Erro ao obter perfil',
+			})
+		}
+	}
 }

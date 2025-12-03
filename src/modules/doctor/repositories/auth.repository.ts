@@ -17,6 +17,13 @@ export class DoctorAuthRepository {
 	async findById(id: string) {
 		return await db.doctor.findUnique({
 			where: { id },
+			include: {
+				appointments: {
+					include: {
+						patient: true
+					}
+				},
+			},
 		})
 	}
 
@@ -29,7 +36,7 @@ export class DoctorAuthRepository {
 				crm: data.crm,
 				specialty: data.specialty,
 				password: data.password,
-			},
+			}
 		})
 	}
 
@@ -43,7 +50,7 @@ export class DoctorAuthRepository {
 		})
 	}
 
-	async updateResetCode(doctorId: string, code: string): Promise<void> {
+	async updateResetCode(doctorId: string, code: string | null): Promise<void> {
 		await db.doctor.update({
 			where: { id: doctorId },
 			data: {
