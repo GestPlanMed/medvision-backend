@@ -2,16 +2,19 @@ import type { FastifyReply, FastifyRequest } from 'fastify'
 import { AppointmentRepository } from '../repositories/appointment.repository'
 import { CreateAppointmentSchema, UpdateAppointmentSchema } from '../schemas/appointment.schema'
 import { DoctorRepository } from '@/modules/doctor/repositories/doctor.repository'
-import { createCryptoService, createDailyService } from '@/services'
+import { PatientRepository } from '@/modules/patient/repositories/patient.repository'
+import { createCryptoService, createDailyService, emailService } from '@/services'
 
 export class AppointmentController {
     private repository: AppointmentRepository
     private doctorRepository: DoctorRepository
+    private patientRepository: PatientRepository
     private dailyService: ReturnType<typeof createDailyService>
 
     constructor() {
         this.repository = new AppointmentRepository()
         this.doctorRepository = new DoctorRepository()
+        this.patientRepository = new PatientRepository()
         this.dailyService = createDailyService()
     }
 
@@ -56,6 +59,32 @@ export class AppointmentController {
                 ...appointmentData.data,
                 roomName: dailyRoom.roomName,
             })
+
+            // Buscar dados do paciente e médico para o email
+            try {
+                const patient = await this.patientRepository.findById(appointmentData.data.patientId)
+                const doctor = await this.doctorRepository.findById(appointmentData.data.doctorId)
+
+                if (patient && doctor) {
+                    const appointmentDate = new Date(appointmentData.data.appointmentDate)
+                    
+                    // Enviar email de confirmação para o paciente
+                    await emailService.sendAppointmentConfirmation(patient.email, {
+                        patientName: patient.name,
+                        doctorName: doctor.name,
+                        appointmentDate: appointmentDate.toLocaleDateString('pt-BR'),
+                        appointmentTime: appointmentDate.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+                        specialty: doctor.specialty,
+                        meetingUrl: dailyRoom.url,
+                        notes: appointmentData.data.notes,
+                    })
+
+                    console.log('✅ Email de confirmação enviado para:', patient.email)
+                }
+            } catch (emailError) {
+                // Não falhar o agendamento se o email falhar
+                console.error('⚠️ Erro ao enviar email de confirmação:', emailError)
+            }
 
             return res.status(201).send({
                 ok: true,

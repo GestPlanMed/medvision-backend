@@ -45,10 +45,6 @@ export const ForgotPasswordAdminSchema = z.object({
 
 export const ResetPasswordAdminSchema = z.object({
 	email: z.string().email('Email inválido'),
-	code: z
-		.string()
-		.length(6, 'Código de reset deve ter 6 dígitos')
-		.regex(/^\d{6}$/, 'Código deve conter apenas números'),
 	newPassword: z.string().min(8, 'Senha deve conter: mínimo 8 caracteres'),
 })
 

@@ -1,4 +1,4 @@
-import { createCryptoService, createJWTService } from '../../../services'
+import { createCryptoService, createJWTService, emailService } from '../../../services'
 import { DoctorAuthRepository } from '../repositories/auth.repository'
 import type { FastifyReply, FastifyRequest } from 'fastify'
 import { SignUpDoctorSchema, SignInDoctorSchema } from '../schemas/auth.schema'
@@ -61,6 +61,20 @@ export class DoctorAuthController {
 				...validation.data,
 				password: hashedPassword,
 			})
+
+			// Enviar email de boas-vindas
+			try {
+				await emailService.sendWelcomeDoctor(doctor.email, {
+					name: doctor.name,
+					email: doctor.email,
+					loginUrl: process.env.FRONTEND_URL ? `${process.env.FRONTEND_URL}/login` : undefined,
+					// Envia senha apenas se foi gerada automaticamente (não fornecida pelo usuário)
+					temporaryPassword: !password ? generatedPassword : undefined,
+				})
+				console.log('✅ Email de boas-vindas enviado para:', doctor.email)
+			} catch (emailError) {
+				console.error('⚠️ Erro ao enviar email de boas-vindas:', emailError)
+			}
 
 			return res.status(201).send({
 				ok: true,
@@ -165,9 +179,23 @@ export class DoctorAuthController {
 			}
 
 			const recoveryCode = this.crypto.generateRandomCode(6)
-			console.log(`Código de recuperação para ${adminEmail}: ${recoveryCode}`)
 
 			await this.repository.updateResetCode(admin.id, recoveryCode)
+
+			// Enviar código por email
+			try {
+				await emailService.sendPasswordRecoveryCode(adminEmail, {
+					name: admin.name || adminEmail.split('@')[0],
+					recoveryCode: recoveryCode,
+					expiresIn: '15 minutos',
+				})
+				console.log(`✅ Código de recuperação enviado por email para: ${adminEmail}`)
+			} catch (emailError) {
+				console.error('⚠️ Erro ao enviar email de recuperação:', emailError)
+			}
+
+			// Log para backup
+			console.log(`Código de recuperação para ${adminEmail}: ${recoveryCode}`)
 
 			return res.send({
 				ok: true,

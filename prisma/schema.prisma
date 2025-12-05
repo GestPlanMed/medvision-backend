@@ -9,114 +9,105 @@ datasource db {
 }
 
 model Admin {
-    id        String   @id @default(uuid())
-    name      String
-    email     String   @unique
-    password  String
-    resetCode String?  
-    createdAt DateTime @default(now()) 
-    updatedAt DateTime @updatedAt
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  password  String
+  resetCode String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-    @@map("admins")
-}
-
-model Patient {
-    id           String        @id @default(uuid())
-    name         String
-    age          Int
-    cpf          String        @unique
-    phone        String
-    gender       Genders
-    address      Json?
-    code         String?       @unique
-
-    createdAt    DateTime      @default(now()) 
-    updatedAt    DateTime      @updatedAt 
-
-    appointments Appointment[]
-    prescriptions Prescription[]
-
-    @@map("patients")
-}
-
-model Doctor {
-    id           String        @id @default(uuid())
-    name         String
-    email        String        @unique
-    phone        String        
-    crm          String        @unique
-    specialty    String
-	monthlySlots Int     @default(0)
-    weeklyAvailability Json?
-    status       String        @default("active")
-
-    code         String?       @unique
-    password     String
-    resetCode    String?       
-
-    createdAt    DateTime      @default(now()) 
-    updatedAt    DateTime      @updatedAt
-
-    appointments Appointment[]
-    prescriptions Prescription[]
-
-    @@map("doctors")
+  @@map("admins")
 }
 
 model Appointment {
-    id              String   @id @default(uuid())
-    patientId       String
-    doctorId        String
-    appointmentDate DateTime @db.Timestamptz()
-    reason          String
-    status          String   @default("scheduled")
-    notes           String?
-    roomName        String?
-    durationMinutes Int?
-    
-    feedbackPatient String?
-    feedbackDoctor  String?
+  id              String          @id @default(uuid())
+  patientId       String
+  doctorId        String
+  appointmentDate DateTime        @db.Timestamptz(6)
+  reason          String
+  status          String          @default("scheduled")
+  notes           String?
+  roomName        String?
+  durationMinutes Int?
+  feedbackPatient String?
+  feedbackDoctor  String?
+  finishedAt      DateTime?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  doctor          Doctor          @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  patient         Patient         @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  prescriptions   Prescription[]
 
-    finishedAt      DateTime?
-    createdAt       DateTime @default(now()) 
-    updatedAt       DateTime @updatedAt 
+  @@unique([patientId, doctorId, appointmentDate])
+  @@index([doctorId])
+  @@index([patientId])
+  @@map("appointments")
+}
 
-    patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
-    doctor  Doctor  @relation(fields: [doctorId], references: [id], onDelete: Cascade)
-    prescriptions Prescription[]
+model Doctor {
+  id                 String          @id @default(uuid())
+  name               String
+  email              String          @unique
+  phone              String
+  crm                String          @unique
+  specialty          String
+  monthlySlots       Int             @default(0)
+  weeklyAvailability Json?
+  status             String          @default("active")
+  code               String?         @unique
+  password           String
+  resetCode          String?
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+  appointments       Appointment[]
+  prescriptions      Prescription[]
 
-    @@unique([patientId, doctorId, appointmentDate])
-    @@index([patientId])
-    @@index([doctorId])
-    @@map("appointments")
+  @@map("doctors")
+}
+
+model Patient {
+  id            String          @id @default(uuid())
+  name          String
+  age           Int
+  cpf           String          @unique
+  phone         String
+  gender        Genders
+  address       Json?
+  code          String?         @unique
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  appointments  Appointment[]
+  prescriptions Prescription[]
+
+  @@map("patients")
 }
 
 model Prescription {
-	id              String      @id @default(uuid())
-	patientId       String
-	doctorId        String
-	appointmentId   String?
-	content         String      
-	status          PrescriptionStatus      @default(active)
-	createdAt       DateTime    @default(now())
-	updatedAt       DateTime    @updatedAt
+  id            String             @id @default(uuid())
+  patientId     String
+  doctorId      String
+  appointmentId String?
+  content       String
+  status        PrescriptionStatus @default(active)
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+  appointment   Appointment?       @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
+  doctor        Doctor             @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  patient       Patient            @relation(fields: [patientId], references: [id], onDelete: Cascade)
 
-	patient         Patient     @relation(fields: [patientId], references: [id], onDelete: Cascade)
-	doctor          Doctor      @relation(fields: [doctorId], references: [id], onDelete: Cascade)
-	appointment     Appointment? @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
-
-	@@index([patientId])
-	@@index([doctorId])
-	@@map("prescriptions")
-}
-
-enum PrescriptionStatus {
-	active
-	expired
-	cancelled
+  @@index([doctorId])
+  @@index([patientId])
+  @@map("prescriptions")
 }
 
 enum Genders {
-    male
-    female
+  male
+  female
+}
+
+enum PrescriptionStatus {
+  active
+  expired
+  cancelled
 }

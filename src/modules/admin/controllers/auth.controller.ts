@@ -1,7 +1,7 @@
 import type { FastifyReply, FastifyRequest } from 'fastify'
 import { AdminAuthRepository } from '../repositories/auth.repository'
-import { createCryptoService, createJWTService } from '../../../services'
-import { SignUpAdminSchema, SignInAdminSchema } from '../schemas/auth.schema'
+import { createCryptoService, createJWTService, emailService } from '../../../services'
+import { SignUpAdminSchema, SignInAdminSchema, ResetPasswordAdminSchema } from '../schemas/auth.schema'
 
 interface Dependencies {
 	fastify: FastifyRequest['server']
@@ -52,6 +52,19 @@ export class AdminAuthController {
 				...validation.data,
 				password: hashedPassword,
 			})
+
+			// Enviar email de boas-vindas com senha
+			try {
+				await emailService.sendWelcomeAdmin(admin.email, {
+					name: admin.email.split('@')[0], // Usa parte do email como nome
+					email: admin.email,
+					loginUrl: process.env.FRONTEND_URL ? `${process.env.FRONTEND_URL}/login` : undefined,
+					temporaryPassword: password, // Admin sempre tem senha definida no cadastro
+				})
+				console.log('✅ Email de boas-vindas enviado para admin:', admin.email)
+			} catch (emailError) {
+				console.error('⚠️ Erro ao enviar email de boas-vindas:', emailError)
+			}
 
 			return res.status(201).send({
 				ok: true,
@@ -148,9 +161,23 @@ export class AdminAuthController {
 			}
 
 			const recoveryCode = this.crypto.generateRandomCode(6)
-			console.log(`Código de recuperação para ${adminEmail}: ${recoveryCode}`)
 
 			await this.repository.updateResetCode(admin.id, recoveryCode)
+
+			// Enviar código por email
+			try {
+				await emailService.sendPasswordRecoveryCode(admin.email, {
+					name: admin.email.split('@')[0],
+					recoveryCode: recoveryCode,
+					expiresIn: '15 minutos',
+				})
+				console.log(`✅ Código de recuperação enviado por email para: ${adminEmail}`)
+			} catch (emailError) {
+				console.error('⚠️ Erro ao enviar email de recuperação:', emailError)
+			}
+
+			// Log para backup
+			console.log(`Código de recuperação para ${adminEmail}: ${recoveryCode}`)
 
 			return res.send({
 				ok: true,
@@ -187,6 +214,47 @@ export class AdminAuthController {
 			return res.status(500).send({
 				ok: false,
 				message: 'Erro ao validar código',
+			})
+		}
+	}
+
+	async resetPassword(req: FastifyRequest, res: FastifyReply) {
+		try {
+			const validation = ResetPasswordAdminSchema.safeParse(req.body)
+
+			if (!validation.success) {
+				return res.status(400).send({
+					ok: false,
+					message: 'Dados inválidos',
+					errors: validation.error.flatten(),
+				})
+			}
+
+			const { email, newPassword } = validation.data
+
+			const admin = await this.repository.findByEmail(email)
+
+			if (!admin) {
+				return res.status(400).send({
+					ok: false,
+					message: 'Código inválido ou expirado',
+				})
+			}
+
+			const hashedPassword = await this.crypto.hashPassword(newPassword)
+
+			await this.repository.updatePassword(admin.id, hashedPassword)
+			await this.repository.clearResetCode(admin.id)
+
+			return res.send({
+				ok: true,
+				message: 'Senha atualizada com sucesso',
+			})
+		} catch (error) {
+			console.error('[AdminResetPassword Error]', error)
+			return res.status(500).send({
+				ok: false,
+				message: 'Erro ao resetar senha',
 			})
 		}
 	}

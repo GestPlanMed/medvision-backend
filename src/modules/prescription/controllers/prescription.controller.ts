@@ -1,12 +1,19 @@
 import type { FastifyReply, FastifyRequest } from 'fastify'
 import { CreatePrescriptionSchema, UpdatePrescriptionSchema, ListPrescriptionsFilterSchema } from '../schemas/prescription.schema'
 import { PrescriptionRepository } from '../repositories/prescription.repository'
+import { PatientRepository } from '@/modules/patient/repositories/patient.repository'
+import { DoctorRepository } from '@/modules/doctor/repositories/doctor.repository'
+import { emailService } from '@/services'
 
 export class PrescriptionController {
 	private repository: PrescriptionRepository
+	private patientRepository: PatientRepository
+	private doctorRepository: DoctorRepository
 
 	constructor() {
 		this.repository = new PrescriptionRepository()
+		this.patientRepository = new PatientRepository()
+		this.doctorRepository = new DoctorRepository()
 	}
 
 	async getAllPrescriptions(req: FastifyRequest, res: FastifyReply) {
@@ -106,6 +113,30 @@ export class PrescriptionController {
 			}
 
 			const prescription = await this.repository.create(body)
+
+			// Enviar email de prescrição pronta para o paciente
+			try {
+				const patient = await this.patientRepository.findById(body.patientId)
+				const doctor = await this.doctorRepository.findById(body.doctorId)
+
+				if (patient && doctor) {
+					const medications = body.medications.map(med => 
+						`${med.name} - ${med.dosage} (${med.frequency})`
+					)
+
+					await emailService.sendPrescriptionReady(patient.email, {
+						patientName: patient.name,
+						doctorName: doctor.name,
+						prescriptionDate: new Date().toLocaleDateString('pt-BR'),
+						medications,
+						instructions: body.notes,
+					})
+
+					console.log('✅ Email de prescrição enviado para:', patient.email)
+				}
+			} catch (emailError) {
+				console.error('⚠️ Erro ao enviar email de prescrição:', emailError)
+			}
 
 			return res.status(201).send({
 				ok: true,

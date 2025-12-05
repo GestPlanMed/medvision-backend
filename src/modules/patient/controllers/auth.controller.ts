@@ -1,5 +1,5 @@
 import type { FastifyReply, FastifyRequest } from 'fastify'
-import { createCryptoService, createJWTService } from '../../../services'
+import { createCryptoService, createJWTService, emailService } from '../../../services'
 import {
 	ResendCodePatientSchema,
 	SignInPatientSchema,
@@ -53,6 +53,20 @@ export class PatientAuthController {
 
 			const patient = await this.repository.create(validation.data)
 
+			// Enviar email de boas-vindas
+			try {
+				// TODO: Usar patient.email quando o campo for adicionado ao modelo
+				const tempEmail = 'natanaelsouza.dev@gmail.com'
+				await emailService.sendWelcomePatient(tempEmail, {
+					name: patient.name,
+					email: tempEmail,
+					loginUrl: process.env.FRONTEND_URL ? `${process.env.FRONTEND_URL}/login` : undefined,
+				})
+				console.log('✅ Email de boas-vindas enviado para:', tempEmail)
+			} catch (emailError) {
+				console.error('⚠️ Erro ao enviar email de boas-vindas:', emailError)
+			}
+
 			return res.status(201).send({
 				ok: true,
 				message: `Paciente ${patient.name} cadastrado.`,
@@ -92,15 +106,31 @@ export class PatientAuthController {
 				})
 			}
 
-			const securityCode = this.crypto.generateSecurityCode()
-			await this.repository.updateVerificationCode(patient.id, securityCode)
+		const securityCode = this.crypto.generateSecurityCode()
+		await this.repository.updateVerificationCode(patient.id, securityCode)
 
-			console.log(`Código de segurança enviado para ${patient.phone}: ${securityCode}`)
-
-			return res.send({
-				ok: true,
-				message: 'Código de segurança enviado',
+		// Enviar código por email
+		try {
+			// TODO: Usar patient.email quando o campo for adicionado ao modelo
+			const tempEmail = 'natanaelsouza.dev@gmail.com'
+			await emailService.sendSecurityCode(tempEmail, {
+				name: patient.name,
+				securityCode: securityCode,
+				expiresIn: '10 minutos',
 			})
+			console.log(`✅ Código de segurança enviado por email para: ${tempEmail}`)
+		} catch (emailError) {
+			console.error('⚠️ Erro ao enviar email com código:', emailError)
+			// Continua mesmo se o email falhar
+		}
+
+		// Log para backup (caso email falhe)
+		console.log(`Código de segurança para ${patient.phone}: ${securityCode}`)
+
+		return res.send({
+			ok: true,
+			message: 'Código de segurança enviado para seu email',
+		})
 		} catch (error) {
 			console.error('[SignIn Error]', error)
 			return res.status(500).send({
@@ -198,15 +228,28 @@ export class PatientAuthController {
 				})
 			}
 
-			const securityCode = this.crypto.generateSecurityCode()
-			await this.repository.updateVerificationCode(patient.id, securityCode)
+		const securityCode = this.crypto.generateSecurityCode()
+		await this.repository.updateVerificationCode(patient.id, securityCode)
 
-			console.log(`Código reenviado para ${patient.phone}: ${securityCode}`)
-
-			return res.send({
-				ok: true,
-				message: 'Código reenviado',
+		// Enviar código por email
+		try {
+			await emailService.sendSecurityCode(patient.email, {
+				name: patient.name,
+				securityCode: securityCode,
+				expiresIn: '10 minutos',
 			})
+			console.log(`✅ Código reenviado por email para: ${patient.email}`)
+		} catch (emailError) {
+			console.error('⚠️ Erro ao reenviar email com código:', emailError)
+		}
+
+		// Log para backup
+		console.log(`Código reenviado para ${patient.phone}: ${securityCode}`)
+
+		return res.send({
+			ok: true,
+			message: 'Código reenviado para seu email',
+		})
 		} catch (error) {
 			console.error('[ResendCode Error]', error)
 			return res.status(500).send({
