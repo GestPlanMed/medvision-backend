@@ -27,9 +27,10 @@ if ! command -v docker &> /dev/null; then
     exit 1
 fi
 
-# Verificar se Docker Compose está instalado
-if ! command -v docker-compose &> /dev/null; then
-    echo -e "${RED}❌ Docker Compose não está instalado!${NC}"
+# Verificar se Docker Compose está disponível
+if ! docker compose version &> /dev/null; then
+    echo -e "${RED}❌ Docker Compose (plugin) não está instalado!${NC}"
+    echo "Instale com: apt-get install docker-compose-plugin"
     exit 1
 fi
 
@@ -41,11 +42,11 @@ fi
 
 # Parar containers existentes
 echo -e "${BLUE}🛑 Parando containers existentes...${NC}"
-docker-compose down
+docker compose down
 
 # Construir e subir containers
 echo -e "${BLUE}🏗️  Construindo e iniciando containers...${NC}"
-docker-compose up -d --build
+docker compose up -d --build
 
 # Aguardar o banco de dados estar pronto
 echo -e "${BLUE}⏳ Aguardando banco de dados...${NC}"
@@ -53,18 +54,18 @@ sleep 10
 
 # Executar migrações
 echo -e "${BLUE}🗄️  Executando migrações do banco...${NC}"
-docker-compose exec -T app pnpm run db:migrate
+docker compose exec -T app pnpm run db:migrate
 
 # Verificar status
 echo -e "${BLUE}📊 Status dos containers:${NC}"
-docker-compose ps
+docker compose ps
 
 echo -e "${GREEN}✅ Deploy concluído com sucesso!${NC}"
 echo ""
 echo "📝 Comandos úteis:"
-echo "  - Ver logs: docker-compose logs -f"
-echo "  - Parar: docker-compose down"
-echo "  - Reiniciar: docker-compose restart"
+echo "  - Ver logs: docker compose logs -f"
+echo "  - Parar: docker compose down"
+echo "  - Reiniciar: docker compose restart"
 echo ""
 echo "🌐 API disponível em: http://localhost:3000"
 echo "📚 Documentação: http://localhost:3000/v1/docs"

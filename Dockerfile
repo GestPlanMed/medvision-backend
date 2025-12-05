@@ -4,7 +4,7 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 
 # Instalar pnpm
-RUN npm install -g pnpm
+RUN corepack enable && corepack prepare pnpm@latest --activate
 
 # Copiar arquivos de dependências
 COPY package.json pnpm-lock.yaml ./
@@ -28,7 +28,7 @@ FROM node:20-alpine
 WORKDIR /app
 
 # Instalar pnpm
-RUN npm install -g pnpm
+RUN corepack enable && corepack prepare pnpm@latest --activate
 
 # Copiar arquivos de dependências
 COPY package.json pnpm-lock.yaml ./
@@ -51,8 +51,8 @@ USER nodejs
 EXPOSE 3000
 
 # Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+HEALTHCHECK --interval=30s --timeout=3s --start-period=40s \
   CMD node -e "require('http').get('http://localhost:3000/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"
 
-# Comando de produção
+# Comando para iniciar
 CMD ["node", "dist/server.js"]
