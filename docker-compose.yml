@@ -32,6 +32,8 @@ services:
       COOKIE_SECRET: ${COOKIE_SECRET}
       NODE_ENV: ${NODE_ENV:-production}
       DAILY_CO_API_KEY: ${DAILY_CO_API_KEY}
+      RESEND_API_KEY: ${RESEND_API_KEY}
+      EMAIL_FROM: ${EMAIL_FROM:-MedVision <noreply@medvision.com>}
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.medvision-api.rule=Host(`medvision.njsolutions.com.br`)"

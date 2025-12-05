@@ -13,25 +13,41 @@ import type {
 import { EmailTemplates } from './templates/email.templates'
 
 export class EmailService {
-	private resend: Resend
+	private resend: Resend | null = null
 	private defaultFrom: string
+	private isEnabled: boolean
 
 	constructor() {
 		const apiKey = process.env.RESEND_API_KEY
+		
 		if (!apiKey) {
-			throw new Error('RESEND_API_KEY não está configurada nas variáveis de ambiente')
+			console.warn('⚠️  RESEND_API_KEY não configurada. Serviço de email desabilitado.')
+			this.isEnabled = false
+		} else {
+			this.resend = new Resend(apiKey)
+			this.isEnabled = true
 		}
 
-		this.resend = new Resend(apiKey)
 		this.defaultFrom = process.env.EMAIL_FROM || 'MedVision <noreply@medvision.com>'
+	}
+
+	/**
+	 * Verifica se o serviço de email está habilitado
+	 */
+	private checkEnabled(): void {
+		if (!this.isEnabled || !this.resend) {
+			throw new Error('Serviço de email não está configurado. Configure RESEND_API_KEY nas variáveis de ambiente.')
+		}
 	}
 
 	/**
 	 * Envia um email genérico
 	 */
 	async sendEmail(options: EmailOptions): Promise<SendEmailResponse> {
+		this.checkEnabled()
+		
 		try {
-			const { data, error } = await this.resend.emails.send({
+			const { data, error } = await this.resend!.emails.send({
 				from: options.from || this.defaultFrom,
 				to: options.to,
 				subject: options.subject,
