@@ -57,6 +57,10 @@ echo -e "${BLUE}🗄️  Inicializando banco de dados...${NC}"
 chmod +x init-db.sh
 ./init-db.sh
 
+# Executar seed do admin
+echo -e "${BLUE}🌱 Criando admin inicial...${NC}"
+docker compose exec -T app pnpm tsx scripts/seed-admin.ts
+
 # Verificar status
 echo -e "${BLUE}📊 Status dos containers:${NC}"
 docker compose ps
