@@ -52,9 +52,10 @@ docker compose up -d --build
 echo -e "${BLUE}⏳ Aguardando banco de dados...${NC}"
 sleep 10
 
-# Executar migrações
-echo -e "${BLUE}🗄️  Executando migrações do banco...${NC}"
-docker compose exec -T app pnpm run db:migrate
+# Executar inicialização do banco
+echo -e "${BLUE}🗄️  Inicializando banco de dados...${NC}"
+chmod +x init-db.sh
+./init-db.sh
 
 # Verificar status
 echo -e "${BLUE}📊 Status dos containers:${NC}"
