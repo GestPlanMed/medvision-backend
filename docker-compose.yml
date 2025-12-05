@@ -27,19 +27,43 @@ services:
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-medvision}:${POSTGRES_PASSWORD:-password123}@postgres:5432/${POSTGRES_DB:-medvision}
       API_VERSION: ${API_VERSION:-1}
-      PORT: ${PORT:-3000}
+      PORT: ${PORT:-3333}
       JWT_SECRET: ${JWT_SECRET}
       COOKIE_SECRET: ${COOKIE_SECRET}
       NODE_ENV: ${NODE_ENV:-production}
       DAILY_CO_API_KEY: ${DAILY_CO_API_KEY}
-    ports:
-      - "${PORT:-3000}:3000"
     depends_on:
       postgres:
         condition: service_healthy
     networks:
       - medvision-network
     restart: unless-stopped
+
+  nginx:
+    image: nginx:alpine
+    container_name: medvision-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./certbot/conf:/etc/letsencrypt:ro
+      - ./certbot/www:/var/www/certbot:ro
+    depends_on:
+      - app
+    networks:
+      - medvision-network
+    restart: unless-stopped
+
+  certbot:
+    image: certbot/certbot
+    container_name: medvision-certbot
+    volumes:
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+    networks:
+      - medvision-network
 
 volumes:
   postgres_data:
