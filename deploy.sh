@@ -54,7 +54,7 @@ sleep 10
 
 # Executar migrações
 echo -e "${BLUE}🗄️  Executando migrações do banco...${NC}"
-docker compose exec -T app pnpm run db:migrate
+docker compose exec -T app sh -c "DATABASE_URL=\${DATABASE_URL} npx prisma migrate deploy --schema=prisma/schema.prisma"
 
 # Verificar status
 echo -e "${BLUE}📊 Status dos containers:${NC}"
