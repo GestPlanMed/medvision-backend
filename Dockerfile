@@ -16,7 +16,9 @@ RUN pnpm install --frozen-lockfile
 # Copiar código-fonte
 COPY . .
 
-# Gerar Prisma Client
+# Gerar Prisma Client (com DATABASE_URL temporária para build)
+ARG DATABASE_URL=postgresql://user:pass@localhost:5432/db
+ENV DATABASE_URL=$DATABASE_URL
 RUN pnpm run db:generate
 
 # Build da aplicação
@@ -37,7 +39,9 @@ COPY prisma ./prisma
 # Instalar apenas dependências de produção
 RUN pnpm install --frozen-lockfile --prod
 
-# Gerar Prisma Client
+# Gerar Prisma Client (com DATABASE_URL temporária para build)
+ARG DATABASE_URL=postgresql://user:pass@localhost:5432/db
+ENV DATABASE_URL=$DATABASE_URL
 RUN pnpm run db:generate
 
 # Copiar build do stage anterior
