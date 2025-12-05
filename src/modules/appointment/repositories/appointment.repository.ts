@@ -3,13 +3,7 @@ import type { CreateAppointmentInput, UpdateAppointmentInput } from '../schemas/
 
 export class AppointmentRepository {
 	async create(appointmentData: CreateAppointmentInput) {
-		const { roomName, ...data } = appointmentData
-		return await db.appointment.create({ 
-			data: {
-				...data,
-				...(roomName && { roomName })
-			}
-		})
+		return await db.appointment.create({ data: appointmentData })
 	}
 
 	async findById(appointmentId: string) {

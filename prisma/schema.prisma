@@ -70,7 +70,7 @@ model Appointment {
     reason          String
     status          String   @default("scheduled")
     notes           String?
-    roomName        String
+    roomName        String?
     durationMinutes Int?
     
     feedbackPatient String?
