@@ -39,7 +39,7 @@ export class PatientAuthRepository {
 		// Converter address para objeto JSON se for string
 		let addressData: object | undefined = undefined
 		if (data.address) {
-			if (typeof data.address === 'string' && data.address.trim()) {
+			if (typeof data.address === 'string' && (data.address as string).trim()) {
 				try {
 					addressData = JSON.parse(data.address)
 				} catch {
