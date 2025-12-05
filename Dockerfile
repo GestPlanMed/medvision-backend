@@ -21,9 +21,6 @@ ARG DATABASE_URL=postgresql://user:pass@localhost:5432/db
 ENV DATABASE_URL=$DATABASE_URL
 RUN pnpm run db:generate
 
-# Build da aplicação
-RUN pnpm run build
-
 # Stage 2: Production
 FROM node:20-alpine
 
@@ -44,8 +41,9 @@ ARG DATABASE_URL=postgresql://user:pass@localhost:5432/db
 ENV DATABASE_URL=$DATABASE_URL
 RUN pnpm run db:generate
 
-# Copiar build do stage anterior
-COPY --from=builder /app/dist ./dist
+# Copiar código fonte do stage anterior
+COPY --from=builder /app/src ./src
+COPY --from=builder /app/tsconfig.json ./tsconfig.json
 
 # Criar usuário não-root
 RUN addgroup -g 1001 -S nodejs && adduser -S nodejs -u 1001
@@ -59,4 +57,4 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=40s \
   CMD node -e "require('http').get('http://localhost:3000/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"
 
 # Comando para iniciar
-CMD ["node", "dist/server.js"]
+CMD ["pnpm", "start"]
