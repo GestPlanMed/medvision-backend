@@ -5,10 +5,12 @@
 	"main": "src/server.ts",
 	"scripts": {
 		"dev": "tsx watch --env-file=.env src/server.ts",
+		"build": "tsc",
 		"start": "node dist/server.js",
 		"format": "biome format --write",
 		"db:generate": "npx prisma generate",
-		"db:migrate": "npx prisma migrate dev",
+		"db:migrate": "npx prisma migrate deploy",
+		"db:migrate:dev": "npx prisma migrate dev",
 		"db:push": "npx prisma db push",
 		"db:studio": "npx prisma studio",
 		"db:reset": "npx prisma migrate reset --force && pnpm run db:seed"
