@@ -232,7 +232,7 @@ export class AppointmentController {
                              'admin'
 
             const token = await this.dailyService.generateToken(
-                appointment.roomName,
+                appointment.roomName || '',
                 req.user?.sub || '',
                 userRole,
                 {
