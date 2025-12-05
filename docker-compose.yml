@@ -38,6 +38,7 @@ services:
       - "traefik.http.routers.medvision-api.entrypoints=websecure"
       - "traefik.http.routers.medvision-api.tls.certresolver=mytlschallenge"
       - "traefik.http.services.medvision-api.loadbalancer.server.port=3333"
+      - "traefik.docker.network=root_default"
     depends_on:
       postgres:
         condition: service_healthy
