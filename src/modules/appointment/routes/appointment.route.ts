@@ -8,4 +8,6 @@ export function AppointmentRoutes(fastify: FastifyInstance) {
 	fastify.post('/create', { preHandler: [authenticate] }, appointmentController.createAppointment.bind(appointmentController))
 	fastify.patch('/update', { preHandler: [authenticate] }, appointmentController.updateAppointment.bind(appointmentController))
 	fastify.get('/', { preHandler: [authenticate] }, appointmentController.getAppointments.bind(appointmentController))
+	fastify.delete('/:id', { preHandler: [authenticate] }, appointmentController.deleteAppointment.bind(appointmentController))
+	fastify.get('/:appointmentId/token', { preHandler: [authenticate] }, appointmentController.getRoomToken.bind(appointmentController))
 }

@@ -40,4 +40,8 @@ export class AppointmentRepository {
 			data,
 		})
 	}
+
+	async delete(appointmentId: string) {
+		return await db.appointment.delete({ where: { id: appointmentId } })
+	}
 }

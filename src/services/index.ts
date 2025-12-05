@@ -4,4 +4,5 @@ export type { RateLimitService } from './ratelimit.service'
 export type { JWTService } from './jwt.service'
 export { createCryptoService } from './crypto.service'
 export type { CryptoService } from './crypto.service'
-
+export { createDailyService } from './daily.service'
+export type { DailyService } from './daily.service'
