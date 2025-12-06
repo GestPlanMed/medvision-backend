@@ -117,24 +117,10 @@ export class AdminAuthController {
 
 			const { token, refreshToken, expiresIn } = this.jwt.generateAdminToken(admin.id, admin.email)
 
-			// Detectar se está em produção (via Traefik HTTPS)
-			const isProduction = req.hostname === 'medvision.njsolutions.com.br' || 
-			                    req.headers['x-forwarded-proto'] === 'https' ||
-			                    req.headers.origin?.includes('https')
-
-			// Log para debug
-			console.log('🔐 Configurando cookie de autenticação:', {
-				protocol: req.protocol,
-				hostname: req.hostname,
-				forwardedProto: req.headers['x-forwarded-proto'],
-				origin: req.headers.origin,
-				isProduction,
-			})
-
 			res.setCookie('token', token, {
 				httpOnly: true,
-				secure: isProduction,
-				sameSite: isProduction ? 'none' : 'lax',
+				secure: true,
+				sameSite: 'none',
 				maxAge: expiresIn,
 				path: '/',
 			})
