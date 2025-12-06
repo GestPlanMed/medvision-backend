@@ -18,12 +18,6 @@ const version = process.env.API_VERSION || '1'
 
 const server = fastify({
 	trustProxy: true, // Importante para reconhecer HTTPS via proxy (Traefik)
-	logger: process.env.NODE_ENV === 'development' ? {
-		level: 'info',
-		transport: {
-			target: 'pino-pretty'
-		}
-	} : true,
 }).withTypeProvider<ZodTypeProvider>()
 
 server.setValidatorCompiler(validatorCompiler)
