@@ -16,7 +16,9 @@ import { AppointmentRoutes } from './modules/appointment/routes/appointment.rout
 
 const version = process.env.API_VERSION || '1'
 
-const server = fastify().withTypeProvider<ZodTypeProvider>()
+const server = fastify({
+	trustProxy: true, // Importante para reconhecer HTTPS via proxy (nginx)
+}).withTypeProvider<ZodTypeProvider>()
 
 server.setValidatorCompiler(validatorCompiler)
 server.setSerializerCompiler(serializerCompiler)
@@ -37,6 +39,29 @@ server.register(fastifyCors, {
 	credentials: true,
 	allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
 	exposedHeaders: ['Set-Cookie'],
+})
+
+// Hook para debug de cookies e headers (remover em produção)
+server.addHook('onRequest', async (request) => {
+	console.log('📨 Request:', {
+		method: request.method,
+		url: request.url,
+		origin: request.headers.origin,
+		cookies: request.cookies,
+		protocol: request.protocol,
+		hostname: request.hostname,
+		forwarded: {
+			proto: request.headers['x-forwarded-proto'],
+			host: request.headers['x-forwarded-host'],
+		}
+	})
+})
+
+server.addHook('onSend', async (_request, reply) => {
+	const setCookieHeader = reply.getHeader('set-cookie')
+	if (setCookieHeader) {
+		console.log('🍪 Set-Cookie:', setCookieHeader)
+	}
 })
 
 server.register(fastifyJwt, {
