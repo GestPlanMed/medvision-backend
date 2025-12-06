@@ -41,31 +41,24 @@ server.register(fastifyCors, {
 	exposedHeaders: ['Set-Cookie'],
 })
 
-// Hook para debug de cookies e headers (remover em produção)
+// Hook para debug apenas de login
 server.addHook('onRequest', async (request) => {
-	console.log('📨 Request:', {
-		method: request.method,
-		url: request.url,
-		origin: request.headers.origin,
-		cookies: request.cookies,
-		protocol: request.protocol,
-		hostname: request.hostname,
-		forwarded: {
-			proto: request.headers['x-forwarded-proto'],
-			host: request.headers['x-forwarded-host'],
-		}
-	})
+	if (request.url.includes('/auth/signin') || request.url.includes('/auth/verify-code')) {
+		console.log('🔐 Login Request:', {
+			method: request.method,
+			url: request.url,
+			origin: request.headers.origin,
+			hostname: request.hostname,
+		})
+	}
 })
 
 server.addHook('onSend', async (request, reply) => {
-	const setCookieHeader = reply.getHeader('set-cookie')
-	if (setCookieHeader) {
-		console.log('🍪 Set-Cookie Header:', setCookieHeader)
-		console.log('🔍 Request Info:', {
-			protocol: request.protocol,
-			forwardedProto: request.headers['x-forwarded-proto'],
-			secure: request.protocol === 'https' || request.headers['x-forwarded-proto'] === 'https',
-		})
+	if (request.url.includes('/auth/signin') || request.url.includes('/auth/verify-code')) {
+		const setCookieHeader = reply.getHeader('set-cookie')
+		if (setCookieHeader) {
+			console.log('🍪 Cookie configurado:', setCookieHeader)
+		}
 	}
 })
 
