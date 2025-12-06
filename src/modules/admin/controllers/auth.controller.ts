@@ -117,7 +117,7 @@ export class AdminAuthController {
 
 			const { token, refreshToken, expiresIn } = this.jwt.generateAdminToken(admin.id, admin.email)
 
-			res.setCookie('token', token, {
+			res.setCookie('med_vision_token', token, {
 				httpOnly: true,
 				secure: process.env.NODE_ENV === 'production',
 				sameSite: 'lax',
