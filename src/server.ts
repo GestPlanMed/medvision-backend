@@ -41,7 +41,7 @@ server.register(fastifyCookie, {
 server.register(fastifyJwt, {
 	secret: process.env.JWT_SECRET || '',
 	cookie: {
-		cookieName: 'med_vision_token',
+		cookieName: 'token',
 		signed: false,
 	},
 	sign: {

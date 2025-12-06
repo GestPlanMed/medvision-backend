@@ -117,11 +117,13 @@ export class AdminAuthController {
 
 			const { token, refreshToken, expiresIn } = this.jwt.generateAdminToken(admin.id, admin.email)
 
-			res.setCookie('med_vision_token', token, {
+			res.setCookie('token', token, {
 				httpOnly: true,
 				secure: process.env.NODE_ENV === 'production',
 				sameSite: 'lax',
 				maxAge: expiresIn,
+				path: '/',
+				domain: process.env.NODE_ENV === 'production' ? '.njsolutions.com.br' : undefined,
 			})
 
 			return res.send({

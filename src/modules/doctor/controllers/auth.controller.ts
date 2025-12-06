@@ -126,18 +126,22 @@ export class DoctorAuthController {
 
 			const { token, refreshToken, expiresIn } = this.jwt.generateDoctorToken(doctor.id, doctor.email, doctor.crm)
 
-			res.setCookie('med_vision_token', token, {
+			res.setCookie('token', token, {
 				httpOnly: true,
 				secure: process.env.NODE_ENV === 'production',
 				sameSite: 'lax',
 				maxAge: expiresIn,
+				path: '/',
+				domain: process.env.NODE_ENV === 'production' ? '.njsolutions.com.br' : undefined,
 			})
 
-			res.setCookie('med_vision_refresh_token', refreshToken, {
+			res.setCookie('refreshToken', refreshToken, {
 				httpOnly: true,
 				secure: process.env.NODE_ENV === 'production',
 				sameSite: 'lax',
 				maxAge: 7 * 24 * 60 * 60,
+				path: '/',
+				domain: process.env.NODE_ENV === 'production' ? '.njsolutions.com.br' : undefined,
 			})
 
 			return res.send({
