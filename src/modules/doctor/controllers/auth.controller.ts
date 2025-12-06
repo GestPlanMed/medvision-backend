@@ -128,20 +128,18 @@ export class DoctorAuthController {
 
 			res.setCookie('token', token, {
 				httpOnly: true,
-				secure: process.env.NODE_ENV === 'production',
-				sameSite: 'lax',
+				secure: true,
+				sameSite: 'none',
 				maxAge: expiresIn,
 				path: '/',
-				domain: process.env.NODE_ENV === 'production' ? '.njsolutions.com.br' : undefined,
 			})
 
 			res.setCookie('refreshToken', refreshToken, {
 				httpOnly: true,
-				secure: process.env.NODE_ENV === 'production',
-				sameSite: 'lax',
+				secure: true,
+				sameSite: 'none',
 				maxAge: 7 * 24 * 60 * 60,
 				path: '/',
-				domain: process.env.NODE_ENV === 'production' ? '.njsolutions.com.br' : undefined,
 			})
 
 			return res.send({

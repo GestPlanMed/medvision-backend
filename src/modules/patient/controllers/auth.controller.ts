@@ -176,11 +176,10 @@ export class PatientAuthController {
 
 			res.setCookie('token', token, {
 				httpOnly: true,
-				secure: process.env.NODE_ENV === 'production',
-				sameSite: 'lax',
+				secure: true,
+				sameSite: 'none',
 				maxAge: expiresIn,
 				path: '/',
-				domain: process.env.NODE_ENV === 'production' ? '.njsolutions.com.br' : undefined,
 			})
 
 			return res.send({
