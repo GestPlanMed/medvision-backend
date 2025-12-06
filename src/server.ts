@@ -22,9 +22,15 @@ server.setValidatorCompiler(validatorCompiler)
 server.setSerializerCompiler(serializerCompiler)
 
 server.register(fastifyCors, {
-	origin: ['http://localhost:5173'],
+	origin: [
+		'http://localhost:5173',
+		'https://medvision-frontend.vercel.app',
+		'https://medvision.njsolutions.com.br'
+	],
 	methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
 	credentials: true,
+	allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
+	exposedHeaders: ['Set-Cookie'],
 })
 
 server.register(fastifyCookie, {
