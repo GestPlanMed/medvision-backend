@@ -21,6 +21,12 @@ const server = fastify().withTypeProvider<ZodTypeProvider>()
 server.setValidatorCompiler(validatorCompiler)
 server.setSerializerCompiler(serializerCompiler)
 
+// Cookie ANTES do CORS para garantir que Set-Cookie seja processado corretamente
+server.register(fastifyCookie, {
+	secret: process.env.COOKIE_SECRET,
+	parseOptions: {},
+})
+
 server.register(fastifyCors, {
 	origin: [
 		'http://localhost:5173',
@@ -31,11 +37,6 @@ server.register(fastifyCors, {
 	credentials: true,
 	allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
 	exposedHeaders: ['Set-Cookie'],
-})
-
-server.register(fastifyCookie, {
-	secret: process.env.COOKIE_SECRET,
-	parseOptions: {},
 })
 
 server.register(fastifyJwt, {
