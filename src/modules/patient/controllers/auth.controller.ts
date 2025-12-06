@@ -174,6 +174,13 @@ export class PatientAuthController {
 
 			const { token, refreshToken, expiresIn } = await this.jwt.generatePatientToken(patient.id, patient.cpf)
 
+			// Log para debug
+			console.log('🔐 Configurando cookie de autenticação:', {
+				protocol: req.protocol,
+				forwardedProto: req.headers['x-forwarded-proto'],
+				origin: req.headers.origin,
+			})
+
 			res.setCookie('token', token, {
 				httpOnly: true,
 				secure: true,

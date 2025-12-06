@@ -17,7 +17,13 @@ import { AppointmentRoutes } from './modules/appointment/routes/appointment.rout
 const version = process.env.API_VERSION || '1'
 
 const server = fastify({
-	trustProxy: true, // Importante para reconhecer HTTPS via proxy (nginx)
+	trustProxy: true, // Importante para reconhecer HTTPS via proxy (Traefik)
+	logger: process.env.NODE_ENV === 'development' ? {
+		level: 'info',
+		transport: {
+			target: 'pino-pretty'
+		}
+	} : true,
 }).withTypeProvider<ZodTypeProvider>()
 
 server.setValidatorCompiler(validatorCompiler)
@@ -57,10 +63,15 @@ server.addHook('onRequest', async (request) => {
 	})
 })
 
-server.addHook('onSend', async (_request, reply) => {
+server.addHook('onSend', async (request, reply) => {
 	const setCookieHeader = reply.getHeader('set-cookie')
 	if (setCookieHeader) {
-		console.log('🍪 Set-Cookie:', setCookieHeader)
+		console.log('🍪 Set-Cookie Header:', setCookieHeader)
+		console.log('🔍 Request Info:', {
+			protocol: request.protocol,
+			forwardedProto: request.headers['x-forwarded-proto'],
+			secure: request.protocol === 'https' || request.headers['x-forwarded-proto'] === 'https',
+		})
 	}
 })
 

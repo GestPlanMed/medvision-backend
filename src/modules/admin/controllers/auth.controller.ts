@@ -117,6 +117,13 @@ export class AdminAuthController {
 
 			const { token, refreshToken, expiresIn } = this.jwt.generateAdminToken(admin.id, admin.email)
 
+			// Log para debug
+			console.log('🔐 Configurando cookie de autenticação:', {
+				protocol: req.protocol,
+				forwardedProto: req.headers['x-forwarded-proto'],
+				origin: req.headers.origin,
+			})
+
 			res.setCookie('token', token, {
 				httpOnly: true,
 				secure: true,

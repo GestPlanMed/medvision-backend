@@ -41,6 +41,13 @@ services:
       - "traefik.http.routers.medvision-api.tls.certresolver=mytlschallenge"
       - "traefik.http.services.medvision-api.loadbalancer.server.port=3333"
       - "traefik.docker.network=root_default"
+      # Headers para CORS e cookies cross-domain
+      - "traefik.http.middlewares.medvision-headers.headers.accesscontrolalloworiginlist=https://medvision-frontend.vercel.app,http://localhost:5173"
+      - "traefik.http.middlewares.medvision-headers.headers.accesscontrolallowcredentials=true"
+      - "traefik.http.middlewares.medvision-headers.headers.accesscontrolallowmethods=GET,POST,PUT,PATCH,DELETE,OPTIONS"
+      - "traefik.http.middlewares.medvision-headers.headers.accesscontrolallowheaders=Content-Type,Authorization,Cookie"
+      - "traefik.http.middlewares.medvision-headers.headers.accesscontrolexposeheaders=Set-Cookie"
+      - "traefik.http.routers.medvision-api.middlewares=medvision-headers"
     depends_on:
       postgres:
         condition: service_healthy
