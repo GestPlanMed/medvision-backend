@@ -41,6 +41,7 @@ COPY --from=builder /app/src/generated ./src/generated
 
 # Copiar código fonte do stage anterior
 COPY --from=builder /app/src ./src
+COPY --from=builder /app/scripts ./scripts
 COPY --from=builder /app/tsconfig.json ./tsconfig.json
 
 # Criar usuário não-root
